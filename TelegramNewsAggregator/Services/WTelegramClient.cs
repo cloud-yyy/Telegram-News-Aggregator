@@ -10,15 +10,18 @@ namespace TelegramNewsAggregator
 		private User? _user;
 
 		private readonly ILogger _logger;
-        private readonly IMessageSerializer _messagesSerializer;
+        private readonly MessageBroker _broker;
         private readonly HashSet<long> _listenedChannelsSet;
 
-
-        public WTelegramClient(ILogger logger, IMessageSerializer messagesSerializer, IConfiguration configuration)
+		public WTelegramClient(MessageBroker broker, ILogger logger, IConfiguration configuration)
 		{
 			_logger = logger;
-			_messagesSerializer = messagesSerializer;
-			_listenedChannelsSet = configuration.GetSection("ListenedChannels").Get<HashSet<long>>();
+			_broker = broker;
+			
+			_listenedChannelsSet = configuration.GetSection("ListenedChannels").Get<HashSet<long>>()!;
+
+			if (_listenedChannelsSet == null)
+				throw new ConfigurationNotFoundException("ListenedChannels");
 
 			Helpers.Log = (l, s) => System.Diagnostics.Debug.WriteLine(s);
 		}
@@ -61,35 +64,38 @@ namespace TelegramNewsAggregator
 			dialogs.CollectUsersChats(_updateManager.Users, _updateManager.Chats);
 		}
 
-		private async Task HandleUpdateAsync(Update update)
+		private Task HandleUpdateAsync(Update update)
 		{
 			switch (update)
 			{
 				case UpdateNewMessage entity:
-					await HandleMessageAsync(entity.message);
+					HandleMessageAsync(entity.message);
 					break;
 				case UpdateEditMessage entity:
-					await HandleMessageAsync(entity.message);
+					HandleMessageAsync(entity.message);
 					break;
 				default:
 					_logger.LogWarn($"Unhandled update type: {update.GetType()}");
 					break;
 			}
+
+			return Task.CompletedTask;
 		}
 
-		private async Task HandleMessageAsync(MessageBase messageBase, bool edited = false)
+		private void HandleMessageAsync(MessageBase messageBase, bool edited = false)
 		{
 			var channelId = messageBase.Peer.ID;
 			var isListened = _listenedChannelsSet.Contains(channelId);
 
 			if (isListened && messageBase is Message message)
 			{
-				_logger.LogInfo("New message handled");
+				_logger.LogInfo($"New message handled in thread: {Environment.CurrentManagedThreadId}");
 				_updateManager.Chats.TryGetValue(channelId, out var chat);
+				
 				var channel = chat as Channel;
-
-				var messageDto = new MessageDto(channelId, channel.Title, message.date, message.message, edited);
-				_messagesSerializer.Serialize(messageDto);
+				var messageDto = new MessageDto(messageBase.ID, channelId, channel.Title, message.date, message.message, edited);
+				
+				_broker.Push(messageDto);
 			}
 		}
 	}

@@ -6,7 +6,7 @@ namespace TelegramNewsAggregator
 {
     public class MessageSerializer : IMessageSerializer
     {
-        private readonly BlockingCollection<MessageDto> _messageQueue;
+        private readonly BlockingCollection<SummarizedMessageDto> _messageQueue;
         private readonly CancellationTokenSource _cancellationTokenSource;
         private readonly Task _processingTask;
         private readonly string _destinationFile;
@@ -21,7 +21,7 @@ namespace TelegramNewsAggregator
                 (ProcessQueue, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
-        public void Serialize(MessageDto message)
+        public void SerializeMessage(SummarizedMessageDto message)
         {
             _messageQueue.Add(message);
         }
