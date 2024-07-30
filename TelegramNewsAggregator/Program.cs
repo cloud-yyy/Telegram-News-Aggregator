@@ -6,7 +6,7 @@ builder.Services.AddControllers();
 builder.Services.AddSingleton<TelegramNewsAggregator.ILogger, ConsoleLogger>();
 builder.Services.AddSingleton<MessageBroker>();
 builder.Services.AddSingleton<IPublishClient, TelegramBotPublishClient>();
-builder.Services.AddSingleton<ISummarizeService, LocalLLMSummarizeService>();
+builder.Services.AddSingleton<ISummarizeService, ChatGPTSummarizeService>();
 builder.Services.AddSingleton<ITelegramClient, WTelegramClient>();
 
 var app = builder.Build();

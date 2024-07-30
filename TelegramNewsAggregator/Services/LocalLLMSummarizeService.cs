@@ -6,7 +6,7 @@ namespace TelegramNewsAggregator
 {
     public class LocalLLMSummarizeService : ISummarizeService, IMessageConsumer<MessageDto>
     {
-        private readonly LLMParams _llmParams;
+        private readonly LocalLLMParams _llmParams;
 
         private readonly LLamaWeights _model;
         private readonly InferenceParams _inferenceParams;
@@ -18,10 +18,10 @@ namespace TelegramNewsAggregator
 
         public LocalLLMSummarizeService(MessageBroker broker, ILogger logger, IConfiguration configuration)
         {
-            var llmParams = configuration.GetSection("LLMParams");
+            var llmParams = configuration.GetSection("LocalLLMParams");
 
             if (llmParams == null)
-                throw new ConfigurationNotFoundException("LLMParams");
+                throw new ConfigurationNotFoundException("LocalLLMParams");
 
             _llmParams = new()
             {

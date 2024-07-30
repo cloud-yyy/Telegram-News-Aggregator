@@ -1,6 +1,6 @@
 namespace TelegramNewsAggregator
 {
-    public class LLMParams
+    public class LocalLLMParams
     {
         public string? ModelPath { get; set; }
         public string? SummarizePrompt { get; set; }

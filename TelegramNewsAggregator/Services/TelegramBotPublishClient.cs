@@ -20,7 +20,7 @@ namespace TelegramNewsAggregator
             var token = Environment.GetEnvironmentVariable("bot_token");
 
             if (token == null)
-                throw new ConfigurationNotFoundException("BotSettings.token");
+                throw new EnviromentVariableNotFoundException("bot_token");
             
             _botClient = new TelegramBotClient(token);
             _connectionCancellationTokenSource = new();
@@ -40,26 +40,7 @@ namespace TelegramNewsAggregator
 
             _logger = logger;
             _semaphore = new SemaphoreSlim(1, 1);
-            _followerChatIds = ReadFollowerChatsIds();
-        }
-
-        private List<long> ReadFollowerChatsIds()
-        {
-            if (!System.IO.File.Exists("followers.txt"))
-            {
-                System.IO.File.Create("followers.txt");
-                return new();
-            }
-
-            return System.IO.File
-                .ReadAllLines("followers.txt")
-                .Select(long.Parse)
-                .ToList();
-        }
-
-        private async Task AddFollowerAsync(long chatId)
-        {
-            await System.IO.File.AppendAllLinesAsync("followers.txt", [chatId.ToString()]);
+            _followerChatIds = FileReaderWriterDebug.ReadFollowerChatIds();
         }
 
         public async Task Notify(SummarizedMessageDto message)
@@ -99,7 +80,7 @@ namespace TelegramNewsAggregator
                 if (!_followerChatIds.Contains(chatId))
                 {
                     _followerChatIds.Add(chatId);
-                    await AddFollowerAsync(chatId);
+                    await FileReaderWriterDebug.AddFollowerChatIdAsync(chatId);
                 }
 
                 _logger.LogInfo($"Message received from chat with id {chatId}");
@@ -126,8 +107,8 @@ namespace TelegramNewsAggregator
             builder
                 .AppendLine($"<b>{dto.Title}</b>\n")
                 .AppendLine($"{dto.SummarizedContent}\n")
-                .Append($"Source: {dto.OriginMessageReference}\n")
-                .Append($"<i>Message was generated using AI, so don't trust it completely.</i>");
+                .AppendLine($"Source: {dto.SourceMessageReference}\n")
+                .AppendLine($"<i>Message was generated using AI, so don't trust it completely.</i>");
 
             return builder.ToString();
         }

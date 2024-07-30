@@ -16,7 +16,6 @@ namespace TelegramNewsAggregator
         [HttpGet]
         public async Task<IActionResult> StartListening()
         {
-
             var user = new UserDto
             (
                 Environment.GetEnvironmentVariable("api_id"),
