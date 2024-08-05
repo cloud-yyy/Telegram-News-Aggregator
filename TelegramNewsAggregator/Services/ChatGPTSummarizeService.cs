@@ -1,4 +1,6 @@
+using Entities.Exceptions;
 using OpenAI.Chat;
+using Shared.Dtos;
 
 namespace TelegramNewsAggregator
 {
@@ -51,9 +53,10 @@ namespace TelegramNewsAggregator
             var dto = new SummarizedMessageDto
             (
                 id: message.Id,
+                telegramId: message.TelegramId,
                 title: title,
                 summarizedContent: summary,
-                sourceMessageReference: CreateMessageUri(message.SenderName, message.Id)
+                sourceMessageReference: "mock"
             );
 
             _logger.LogInfo($"ChatGptSummarizeService finished for {message.Id} in thread: {Environment.CurrentManagedThreadId}");

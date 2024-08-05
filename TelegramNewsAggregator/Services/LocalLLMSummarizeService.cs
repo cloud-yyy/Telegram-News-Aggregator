@@ -1,6 +1,8 @@
 using System.Text;
+using Entities.Exceptions;
 using LLama;
 using LLama.Common;
+using Shared.Dtos;
 
 namespace TelegramNewsAggregator
 {
@@ -85,10 +87,10 @@ namespace TelegramNewsAggregator
             var summarized = new SummarizedMessageDto
             (
                 message.Id,
+                message.TelegramId,
                 title,
                 summary,
-                // TODO: Maybe extract this link to configuration
-                $"t.me/{message.SenderName}/{message.Id}"
+                "mock"
             );
 
             _broker.Push(summarized);

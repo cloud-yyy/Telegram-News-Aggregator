@@ -1,3 +1,5 @@
+using Shared.Dtos;
+
 namespace TelegramNewsAggregator
 {
     public interface IMessageSerializer

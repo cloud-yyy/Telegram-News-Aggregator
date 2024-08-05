@@ -1,6 +1,7 @@
 
 using System.Collections.Concurrent;
 using Newtonsoft.Json;
+using Shared.Dtos;
 
 namespace TelegramNewsAggregator
 {

@@ -1,4 +1,4 @@
-namespace TelegramNewsAggregator
+namespace Entities.Exceptions
 {
     public class EnviromentVariableNotFoundException : Exception
     {

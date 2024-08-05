@@ -1,4 +1,6 @@
 using System.Text;
+using Entities.Exceptions;
+using Shared.Dtos;
 using Telegram.Bot;
 using Telegram.Bot.Exceptions;
 using Telegram.Bot.Polling;

@@ -1,16 +1,20 @@
 using Microsoft.AspNetCore.Mvc;
+using Shared.Dtos;
 
 namespace TelegramNewsAggregator
 {
     [ApiController]
     [Route("/")]
-    public class ReaderController : ControllerBase
+    public class RootController : ControllerBase
     {
-        private readonly ITelegramClient _telegramClient;
+        private readonly WTelegramClient _telegramClient;
+        private readonly ITelegramMessageReader _messageReader;
 
-        public ReaderController(ITelegramClient telegramClient)
+        public RootController(WTelegramClient telegramClient, ITelegramMessageReader messageReader, MessageBrokerConfig config)
         {
             _telegramClient = telegramClient;
+            _messageReader = messageReader;
+            config.Configure();
         }
 
         [HttpGet]
@@ -32,7 +36,7 @@ namespace TelegramNewsAggregator
 
             if (succeed)
             {
-                await _telegramClient.HandleNewMessagesAsync();
+                await _messageReader.StartListeningAsync();
                 return Ok("Listening was started...");
             }
             else

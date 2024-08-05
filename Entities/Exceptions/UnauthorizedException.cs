@@ -1,4 +1,4 @@
-namespace TelegramNewsAggregator
+namespace Entities.Exceptions
 {
     [Serializable]
     public class UnauthorizedException : Exception
