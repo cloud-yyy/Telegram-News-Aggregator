@@ -7,22 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="LLamaSharp" Version="0.14.0" />
-    <PackageReference Include="LLamaSharp.Backend.Cpu" Version="0.14.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.4">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="OpenAI" Version="2.0.0-beta.7" />
-    <PackageReference Include="Rake" Version="1.0.0" />
-    <PackageReference Include="Telegram.Bot" Version="21.7.1" />
-    <PackageReference Include="WTelegramClient" Version="4.1.5" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../Repository/Repository.csproj" />
-    <ProjectReference Include="..\Shared\Shared.csproj" />
+    <ProjectReference Include="../Services/Services.csproj" />
   </ItemGroup>
 
 </Project>

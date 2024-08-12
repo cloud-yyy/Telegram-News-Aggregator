@@ -1,9 +1,17 @@
+using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace Entities.Models
 {
     public class Message
     {
+        public enum SummarizationStatus
+        {
+            NotSummarized,
+            SummarizedSingle,
+            SummarizedMultiple
+        }
+
         public Guid Id { get; set; }
 
         [Required(ErrorMessage = "TelegramId is a required field.")]
@@ -16,7 +24,10 @@ namespace Entities.Models
         public string? Content { get; set; }
 
         public Guid ChannelId { get; set; }
-
         public Channel? Channel { get; set; }
+
+        [EnumDataType(typeof(SummarizationStatus))]
+        [DefaultValue(SummarizationStatus.NotSummarized)]
+        public SummarizationStatus Status { get; set; }
     }
 }

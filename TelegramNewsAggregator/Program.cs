@@ -1,7 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using Repository;
+using Services;
+using Services.Contracts;
 using TelegramNewsAggregator;
-using TelegramNewsAggregator.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,25 +21,19 @@ builder.Services.AddDbContext<RepositoryContext>
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<ChannelRepository>();
-builder.Services.AddScoped<MessageRepository>();
-builder.Services.AddScoped<TagRepository>();
-builder.Services.AddScoped<MessagesTagsRepository>();
-
 builder.Services.AddScoped<ChannelService>();
 
-builder.Services.AddSingleton<TelegramNewsAggregator.ILogger, ConsoleLogger>();
+builder.Services.AddSingleton<Services.Contracts.ILogger, ConsoleLogger>();
 builder.Services.AddSingleton<MessageBroker>();
 builder.Services.AddSingleton<WTelegramClient>();
+builder.Services.AddSingleton<ChatGptClient>();
 builder.Services.AddSingleton<RepositoryContextFactory>();
 
-builder.Services.AddScoped<ITelegramMessageReader, WTelegramMessageReader>();
+builder.Services.ConfigureMessagesReading();
+builder.Services.ConfigureSummarizing();
+
 builder.Services.AddScoped<ITelegramChannelIdResolver, WTelegramChannelIdResolver>();
 builder.Services.AddScoped<IPublishClient, TelegramBotPublishClient>();
-builder.Services.AddScoped<ISummarizeService, SummarizeServiceMock>();
-builder.Services.AddScoped<ITagsExtractService, RakeTagsExtractService>();
-
-builder.Services.AddScoped<MessageDbWriter>();
-builder.Services.AddScoped<TagsDbWriter>();
 
 builder.Services.AddScoped<MessageBrokerConfig>();
 

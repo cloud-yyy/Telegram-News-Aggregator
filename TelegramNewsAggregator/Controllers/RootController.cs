@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
+using Services;
+using Services.Contracts;
 using Shared.Dtos;
 
 namespace TelegramNewsAggregator
