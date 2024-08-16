@@ -55,14 +55,15 @@ namespace Services
             if (channelForCreationDto == null)
                 throw new ArgumentNullException(nameof(channelForCreationDto));
 
-            if (channelForCreationDto.Id == null && channelForCreationDto.Tag == null)
-                throw new ArgumentException(nameof(channelForCreationDto));
+            if (channelForCreationDto.Name == null)
+                throw new ArgumentException(nameof(channelForCreationDto.Name));
 
             var channel = new Channel()
             {
                 Id = new Guid(),
-                TelegramId = channelForCreationDto.Id ?? (await _channelIdResolver.ResolveByTag(channelForCreationDto.Tag)),
-                Name = channelForCreationDto.Tag,
+                TelegramId = channelForCreationDto.Id ?? (await _channelIdResolver.ResolveByTag(channelForCreationDto.Name)),
+                Name = channelForCreationDto.Name,
+                IsPrivate = channelForCreationDto.Id != null
             };
 
             _repository.CreateChannel(channel);

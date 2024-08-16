@@ -5,14 +5,14 @@ namespace Shared.Dtos
         public Guid Id { get; set; }
         public string Title { get; init; }
         public string Content { get; init; }
-        public IEnumerable<Guid> Sources { get; init; }
+        public IEnumerable<MessageDto> Sources { get; init; }
         public DateTime CreatedAt { get; init; }
 
         public SummaryDto(
             Guid id,
             string title,
             string content,
-            IEnumerable<Guid> sources,
+            IEnumerable<MessageDto> sources,
             DateTime createdAt)
         {
             Id = id;

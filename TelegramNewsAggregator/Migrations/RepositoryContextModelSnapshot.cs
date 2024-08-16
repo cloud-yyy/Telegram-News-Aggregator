@@ -10,7 +10,7 @@ using Repository;
 
 namespace TelegramNewsAggregator.Migrations
 {
-    [DbContext(typeof(RepositoryContext))]
+    [DbContext(typeof(ApplicationContext))]
     partial class RepositoryContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -44,13 +44,53 @@ namespace TelegramNewsAggregator.Migrations
                     b.ToTable("MessagesTags");
                 });
 
+            modelBuilder.Entity("Entities.Models.BufferedBlock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BufferedBlocks");
+                });
+
+            modelBuilder.Entity("Entities.Models.BufferedMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BlockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("BlockId");
+
+                    b.HasIndex("MessageId")
+                        .IsUnique();
+
+                    b.ToTable("BufferedMessages");
+                });
+
             modelBuilder.Entity("Entities.Models.Channel", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<bool>("IsPrivate")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasMaxLength(32)
                         .HasColumnType("character varying(32)");
 
@@ -86,6 +126,10 @@ namespace TelegramNewsAggregator.Migrations
 
                     b.Property<long>("TelegramId")
                         .HasColumnType("bigint");
+
+                    b.Property<string>("Uri")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
@@ -130,10 +174,10 @@ namespace TelegramNewsAggregator.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MessageId");
-
-                    b.HasIndex("SummaryId", "MessageId")
+                    b.HasIndex("MessageId")
                         .IsUnique();
+
+                    b.HasIndex("SummaryId");
 
                     b.ToTable("SummaryBlocks");
                 });
@@ -173,6 +217,25 @@ namespace TelegramNewsAggregator.Migrations
                     b.Navigation("Message");
 
                     b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("Entities.Models.BufferedMessage", b =>
+                {
+                    b.HasOne("Entities.Models.BufferedBlock", "Block")
+                        .WithMany()
+                        .HasForeignKey("BlockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entities.Models.Message", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Block");
+
+                    b.Navigation("Message");
                 });
 
             modelBuilder.Entity("Entities.Models.Message", b =>

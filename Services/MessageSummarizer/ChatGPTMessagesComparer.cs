@@ -1,34 +1,38 @@
 using Entities.Exceptions;
 using Newtonsoft.Json;
 using OpenAI.Chat;
-using Services.Contracts;
+using Repository;
 using Shared.Dtos;
 
 namespace Services
 {
-    public class ChatGPTMessagesComparer : IMessageComparer
+    public class ChatGPTMessagesComparer : MessageComparerBase
     {
         private readonly ChatGptClient _client;
 
-        public ChatGPTMessagesComparer(ChatGptClient client)
+        public ChatGPTMessagesComparer(ApplicationContextFactory contextFactory, ChatGptClient client)
+            : base(contextFactory)
         {
             _client = client;
         }
 
-        public async Task<MessagesComparingResultDto> CompareByTags(IEnumerable<MessageTagsDto> messageTags)
+        protected override async Task<IEnumerable<Guid>> CompareToMessageAsync
+            (MessageTagsDto newMessageTags, IEnumerable<MessageTagsDto> existedMessagesTags)
         {
-            var jsonData = JsonConvert.SerializeObject(messageTags);
-            var prompt = $"{_client.Params.ComparePrompt}:\n{jsonData}";
+            var newMessageTagsJson = JsonConvert.SerializeObject(newMessageTags.Tags);
+            var jsonData = JsonConvert.SerializeObject(existedMessagesTags);
+            var prompt =
+                $"{_client.Params.ComparePrompt}\nNew message tags: {newMessageTagsJson}.\nExisted messages tags: {jsonData}";
 
             try
             {
                 ChatCompletion completion = await _client.Client.CompleteChatAsync(prompt);
-                var jsonResult = ChatGptClient.TrimJsonResponse(completion.ToString());
-                var result = JsonConvert.DeserializeObject<MessagesComparingResultDto>(jsonResult);
+                var jsonResult = ChatGptClient.TrimJsonResponse(completion.ToString(), '[');
+                var result = JsonConvert.DeserializeObject<IEnumerable<Guid>>(jsonResult);
 
                 if (result == null)
-                    throw new NullReferenceException();                
-                
+                    throw new NullReferenceException();
+
                 return result;
             }
             catch (Exception ex)

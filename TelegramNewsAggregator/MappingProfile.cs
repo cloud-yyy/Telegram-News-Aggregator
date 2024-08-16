@@ -1,5 +1,4 @@
 using AutoMapper;
-using Entities;
 using Entities.Models;
 using Shared.Dtos;
 
@@ -16,6 +15,8 @@ namespace TelegramNewsAggregator
 
             CreateMap<Summary, SummaryDto>()
                 .ReverseMap();
+
+            CreateMap<BufferedMessage, BufferedMessageDto>();
         }
     }
 }

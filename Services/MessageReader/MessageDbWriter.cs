@@ -7,11 +7,11 @@ namespace Services;
 
 public class MessageDbWriter
 {
-    private readonly RepositoryContext _context;
+    private readonly ApplicationContext _context;
     private readonly IMapper _mapper;
     private readonly SemaphoreSlim _semaphore;
 
-	public MessageDbWriter(RepositoryContextFactory contextFactory, IMapper mapper)
+	public MessageDbWriter(ApplicationContextFactory contextFactory, IMapper mapper)
 	{
 		_context = contextFactory.Create();
 		_mapper = mapper;

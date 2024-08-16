@@ -3,22 +3,22 @@ using Microsoft.Extensions.Configuration;
 
 namespace Repository
 {
-    public class RepositoryContextFactory
+    public class ApplicationContextFactory
     {
         private readonly string _connectionString;
 
-        public RepositoryContextFactory(IConfiguration configuration)
+        public ApplicationContextFactory(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")!;
         }
 
-        public RepositoryContext Create()
+        public ApplicationContext Create()
         {
-            var options = new DbContextOptionsBuilder<RepositoryContext>()
+            var options = new DbContextOptionsBuilder<ApplicationContext>()
                 .UseNpgsql(_connectionString)
                 .Options;
 
-            return new RepositoryContext(options);
+            return new ApplicationContext(options);
         }
     }
 }

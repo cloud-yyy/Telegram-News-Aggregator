@@ -10,11 +10,17 @@ namespace TelegramNewsAggregator
     public class RootController : ControllerBase
     {
         private readonly WTelegramClient _telegramClient;
+        private readonly MessageLifetimeTracker _messageLifetimeTracker;
         private readonly ITelegramMessageReader _messageReader;
 
-        public RootController(WTelegramClient telegramClient, ITelegramMessageReader messageReader, MessageBrokerConfig config)
+        public RootController(
+            WTelegramClient telegramClient,
+            MessageLifetimeTracker messageLifetimeTracker, 
+            ITelegramMessageReader messageReader, 
+            MessageBrokerConfig config)
         {
             _telegramClient = telegramClient;
+            _messageLifetimeTracker = messageLifetimeTracker;
             _messageReader = messageReader;
             config.Configure();
         }
@@ -35,6 +41,7 @@ namespace TelegramNewsAggregator
             );
 
             var succeed = await _telegramClient.LoginAsync(user);
+            _messageLifetimeTracker.ExecuteAsync();
 
             if (succeed)
             {

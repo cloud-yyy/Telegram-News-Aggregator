@@ -7,13 +7,13 @@ namespace TelegramNewsAggregator
     {
         public static void ConfigureSummarizing(this IServiceCollection services)
         {
-            services.AddScoped<SummarizingEntryPoint>();
-            services.AddScoped<IMessageComparer, ChatGPTMessagesComparer>();
+            services.AddScoped<MessageBufferizerService>();
+            services.AddScoped<MessageComparerBase, ChatGPTMessagesComparer>();
             services.AddScoped<IMessagesSummarizer, ChatGPTMessagesSummarizer>();
-            services.AddScoped<MessagesTagsDbReader>();
-            services.AddScoped<MessageDbReader>();
+            services.AddScoped<BufferedMessagesSummarizer>();
+            services.AddScoped<BufferedBlockService>();
             services.AddScoped<MessageStatusDbWriter>();
-            services.AddScoped<SummaryDbWriter>();
+            services.AddScoped<MessageLifetimeTracker>();
         }
 
         public static void ConfigureMessagesReading(this IServiceCollection services)

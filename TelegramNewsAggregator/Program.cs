@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.Services.AddDbContext<RepositoryContext>
+builder.Services.AddDbContext<ApplicationContext>
 (
 	opts =>
 	{
@@ -27,7 +27,7 @@ builder.Services.AddSingleton<Services.Contracts.ILogger, ConsoleLogger>();
 builder.Services.AddSingleton<MessageBroker>();
 builder.Services.AddSingleton<WTelegramClient>();
 builder.Services.AddSingleton<ChatGptClient>();
-builder.Services.AddSingleton<RepositoryContextFactory>();
+builder.Services.AddSingleton<ApplicationContextFactory>();
 
 builder.Services.ConfigureMessagesReading();
 builder.Services.ConfigureSummarizing();

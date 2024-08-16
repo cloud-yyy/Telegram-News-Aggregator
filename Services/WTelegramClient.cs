@@ -18,7 +18,7 @@ namespace Services
 		public WTelegramClient(ILogger logger)
 		{
 			_logger = logger;
-			Helpers.Log = (l, s) => System.Diagnostics.Debug.WriteLine(s);
+			Helpers.Log = (l, s) => {};
 		}
 
 		public async Task<bool> LoginAsync(UserDto userDto)

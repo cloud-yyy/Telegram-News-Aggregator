@@ -6,10 +6,10 @@ namespace Services
 {
     public class MessageStatusDbWriter
     {
-        private readonly RepositoryContext _context;
+        private readonly ApplicationContext _context;
         private readonly SemaphoreSlim _semaphore;
 
-        public MessageStatusDbWriter(RepositoryContextFactory contextFactory)
+        public MessageStatusDbWriter(ApplicationContextFactory contextFactory)
         {
             _context = contextFactory.Create();
             _semaphore = new SemaphoreSlim(1, 1);
@@ -23,6 +23,11 @@ namespace Services
         public async Task SetSummarizedMultipleAsync(IEnumerable<Guid> ids)
         {
             await SetStatusAsync(ids, Message.SummarizationStatus.SummarizedMultiple);
+        }
+
+        public async Task SetInBlockAsync(IEnumerable<Guid> ids)
+        {
+            await SetStatusAsync(ids, Message.SummarizationStatus.InBlock);
         }
 
         private async Task SetStatusAsync(IEnumerable<Guid> ids, Message.SummarizationStatus status)

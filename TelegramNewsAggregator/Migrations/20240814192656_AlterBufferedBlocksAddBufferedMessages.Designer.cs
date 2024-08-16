@@ -12,8 +12,8 @@ using Repository;
 namespace TelegramNewsAggregator.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    [Migration("20240807172022_AddSummariesAndSummaryBlocksTablesAlterMessagesTable")]
-    partial class AddSummariesAndSummaryBlocksTablesAlterMessagesTable
+    [Migration("20240814192656_AlterBufferedBlocksAddBufferedMessages")]
+    partial class AlterBufferedBlocksAddBufferedMessages
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -45,6 +45,42 @@ namespace TelegramNewsAggregator.Migrations
                         .IsUnique();
 
                     b.ToTable("MessagesTags");
+                });
+
+            modelBuilder.Entity("Entities.Models.BufferedBlock", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BufferedBlocks");
+                });
+
+            modelBuilder.Entity("Entities.Models.BufferedMessage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("BlockId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MessageId");
+
+                    b.HasIndex("BlockId", "MessageId")
+                        .IsUnique();
+
+                    b.ToTable("BufferedMessages");
                 });
 
             modelBuilder.Entity("Entities.Models.Channel", b =>
@@ -176,6 +212,25 @@ namespace TelegramNewsAggregator.Migrations
                     b.Navigation("Message");
 
                     b.Navigation("Tag");
+                });
+
+            modelBuilder.Entity("Entities.Models.BufferedMessage", b =>
+                {
+                    b.HasOne("Entities.Models.BufferedBlock", "Block")
+                        .WithMany()
+                        .HasForeignKey("BlockId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entities.Models.Message", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Block");
+
+                    b.Navigation("Message");
                 });
 
             modelBuilder.Entity("Entities.Models.Message", b =>

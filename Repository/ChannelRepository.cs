@@ -5,9 +5,9 @@ namespace Repository
 {
     public class ChannelRepository
     {
-        private readonly RepositoryContext _context;
+        private readonly ApplicationContext _context;
 
-        public ChannelRepository(RepositoryContext context)
+        public ChannelRepository(ApplicationContext context)
         {
             _context = context;
         }

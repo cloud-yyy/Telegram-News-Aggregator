@@ -9,12 +9,12 @@ namespace Services
 {
     public class TagsDbWriter
     {
-        private readonly RepositoryContext _context;
+        private readonly ApplicationContext _context;
         private readonly IMapper _mapper;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
 
-        public TagsDbWriter(RepositoryContextFactory contextFactory, IMapper mapper, ILogger logger)
+        public TagsDbWriter(ApplicationContextFactory contextFactory, IMapper mapper, ILogger logger)
         {
             _context = contextFactory.Create();
             _mapper = mapper;

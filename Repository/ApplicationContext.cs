@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.ThreadSafe;
 
 namespace Repository
 {
-    public class RepositoryContext : ThreadSafeDbContext
+    public class ApplicationContext : ThreadSafeDbContext
     {
         public DbSet<Channel> Channels { get; set; }
         public DbSet<Message> Messages { get; set; }
@@ -13,8 +13,10 @@ namespace Repository
         public DbSet<MessageTag> MessagesTags { get; set; }
         public DbSet<Summary> Summaries { get; set; }
         public DbSet<SummaryBlock> SummaryBlocks { get; set; }
+        public DbSet<BufferedBlock> BufferedBlocks { get; set; }
+        public DbSet<BufferedMessage> BufferedMessages { get; set; }
 
-        public RepositoryContext(DbContextOptions<RepositoryContext> options) : base(options)
+        public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
         }
 
@@ -33,7 +35,11 @@ namespace Repository
                 .IsUnique();
 
             modelBuilder.Entity<SummaryBlock>()
-                .HasIndex(e => new { e.SummaryId, e.MessageId })
+                .HasIndex(e => e.MessageId )
+                .IsUnique();
+
+            modelBuilder.Entity<BufferedMessage>()
+                .HasIndex(e => e.MessageId)
                 .IsUnique();
 
             base.OnModelCreating(modelBuilder);

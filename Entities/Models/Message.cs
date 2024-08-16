@@ -9,7 +9,8 @@ namespace Entities.Models
         {
             NotSummarized,
             SummarizedSingle,
-            SummarizedMultiple
+            SummarizedMultiple,
+            InBlock
         }
 
         public Guid Id { get; set; }
@@ -21,7 +22,10 @@ namespace Entities.Models
         public DateTime SendedAt { get; set; }
 
         [Required(ErrorMessage = $"Content is required field")]
-        public string? Content { get; set; }
+        public string Content { get; set; }
+
+        [Required(ErrorMessage = $"Uri is required field")]
+        public string Uri { get; set; }
 
         public Guid ChannelId { get; set; }
         public Channel? Channel { get; set; }

@@ -11,7 +11,7 @@ namespace Services
         private readonly ChatGptClient _client;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
-        
+
         public ChatGPTMessagesSummarizer(ChatGptClient client, ILogger logger)
         {
             _client = client;
@@ -19,14 +19,14 @@ namespace Services
             _semaphore = new SemaphoreSlim(1, 1);
         }
 
-        public async Task<SummaryDto> Summarize(List<MessageDto> messages)
+        public async Task<SummaryDto> SummarizeAsync(IEnumerable<MessageDto> messages)
         {
             await _semaphore.WaitAsync();
 
             try
             {
-                if (messages.Count == 1)
-                    return await SummarizeSingle(messages[0]);
+                if (messages.Count() == 1)
+                    return await SummarizeSingle(messages.First());
                 else
                     return await SummarizeMany(messages);
             }
@@ -46,7 +46,7 @@ namespace Services
             return await SummarizeFromPrompt(prompt, [message]);
         }
 
-        private async Task<SummaryDto> SummarizeMany(List<MessageDto> messages)
+        private async Task<SummaryDto> SummarizeMany(IEnumerable<MessageDto> messages)
         {
             var promptBuilder = new StringBuilder(_client.Params.SummarizeManyPrompt);
 
@@ -80,18 +80,13 @@ namespace Services
                 id: Guid.NewGuid(),
                 title: title,
                 content: summary,
-                sources: sources.Select(s => s.Id),
+                sources: sources,
                 createdAt: DateTime.UtcNow
             );
 
             _logger.LogInfo($"ChatGPTMessagesSummarizer finished in thread: {Environment.CurrentManagedThreadId}");
 
             return dto;
-        }
-
-        private string CreateMessageUri(string channelName, long messageId)
-        {
-            return $"t.me/{Uri.EscapeDataString(channelName)}/{messageId}";
         }
     }
 }

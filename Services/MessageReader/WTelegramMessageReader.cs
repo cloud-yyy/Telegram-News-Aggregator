@@ -50,18 +50,24 @@ public class WTelegramMessageReader : ITelegramMessageReader
 		if (isListened && messageBase is Message message)
 		{
 			_logger.LogInfo($"New message handled in thread: {Environment.CurrentManagedThreadId}");
-
+			
 			var messageDto = new MessageDto
 			(
 				id: Guid.NewGuid(), 
 				telegramId: messageBase.ID, 
 				channelId: listenedChannel!.Id, 
 				sendedAt: message.date, 
-				content: message.message
+				content: message.message,
+				uri: BuildUri(listenedChannel, messageBase.ID)
 			);
 
 			_broker.Push(messageDto);
 			OnReceived?.Invoke(messageDto);
 		}
+	}
+
+	private string BuildUri(Entities.Models.Channel channel, long messageId)
+	{
+		return channel.IsPrivate ? channel.Name : $"t.me/{channel.Name}/{messageId}";
 	}
 }

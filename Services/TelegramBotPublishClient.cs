@@ -110,8 +110,13 @@ namespace Services
             builder
                 .AppendLine($"<b>{dto.Title}</b>\n")
                 .AppendLine($"{dto.Content}\n")
-                .AppendLine($"Source: {dto.Sources.First()}\n")
-                .AppendLine($"<i>Message was generated using AI, so don't trust it completely.</i>");
+                .AppendLine($"Sources:");
+
+            foreach (var uri in dto.Sources.Select(s => s.Uri).Distinct())
+                builder.AppendLine($"<i>{uri}</i>");
+            
+            builder
+                .AppendLine($"\n<i>Message was generated using AI</i>");
 
             return builder.ToString();
         }

@@ -1,6 +1,7 @@
 using Entities.Exceptions;
 using Services.Contracts;
 using Shared.Dtos;
+using Shared.Notifications;
 
 namespace Services
 {
@@ -8,13 +9,13 @@ namespace Services
     {
         private readonly Topic<MessageDto> _messagesTopic;
         private readonly Topic<SummaryDto> _summarizedMessagesTopic;
-        private readonly Topic<MessageTagsDto> _tagsForMessageTopic;
+        private readonly Topic<MessageSavedNotification> _messageSavedNotificationTopic;
 
         public MessageBroker(ILogger logger)
         {
             _messagesTopic = new Topic<MessageDto>(logger);
             _summarizedMessagesTopic = new Topic<SummaryDto>(logger);
-            _tagsForMessageTopic = new Topic<MessageTagsDto>(logger);
+            _messageSavedNotificationTopic = new Topic<MessageSavedNotification>(logger);
         }
 
         public void Push<T>(T message)
@@ -23,8 +24,8 @@ namespace Services
                 _messagesTopic.Push(dto);
             else if (message is SummaryDto summarizedDto)
                 _summarizedMessagesTopic.Push(summarizedDto);
-            else if (message is MessageTagsDto tagsForMessageDto)
-                _tagsForMessageTopic.Push(tagsForMessageDto);
+            else if (message is MessageSavedNotification messageSavedNotification)
+                _messageSavedNotificationTopic.Push(messageSavedNotification);
             else
                 throw new MessageBrokerTopicNotExistsException(typeof(T));
         }
@@ -35,8 +36,8 @@ namespace Services
                 _messagesTopic.AddConsumer(messageReader);
             else if (reader is IMessageConsumer<SummaryDto> summarizedMessageReader)
                 _summarizedMessagesTopic.AddConsumer(summarizedMessageReader);
-            else if (reader is IMessageConsumer<MessageTagsDto> tagsReader)
-                _tagsForMessageTopic.AddConsumer(tagsReader);
+            else if (reader is IMessageConsumer<MessageSavedNotification> messageSavedReader)
+                _messageSavedNotificationTopic.AddConsumer(messageSavedReader);
             else
                 throw new MessageBrokerTopicNotExistsException(typeof(T));
         }

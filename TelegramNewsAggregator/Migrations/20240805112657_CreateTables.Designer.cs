@@ -11,7 +11,7 @@ using Repository;
 
 namespace TelegramNewsAggregator.Migrations
 {
-    [DbContext(typeof(RepositoryContext))]
+    [DbContext(typeof(ApplicationContext))]
     [Migration("20240805112657_CreateTables")]
     partial class CreateTables
     {
