@@ -17,6 +17,8 @@ namespace TelegramNewsAggregator
                 .ReverseMap();
 
             CreateMap<BufferedMessage, BufferedMessageDto>();
+
+            CreateMap<User, UserDto>();
         }
     }
 }

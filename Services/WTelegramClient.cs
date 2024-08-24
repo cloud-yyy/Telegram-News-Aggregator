@@ -21,7 +21,7 @@ namespace Services
 			Helpers.Log = (l, s) => {};
 		}
 
-		public async Task<bool> LoginAsync(UserDto userDto)
+		public async Task<bool> LoginAsync(MessageReaderUserDto userDto)
 		{
 			_client = new Client(paramName =>
 			{

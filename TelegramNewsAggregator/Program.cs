@@ -3,6 +3,7 @@ using Repository;
 using Services;
 using Services.Contracts;
 using TelegramNewsAggregator;
+using TelegramNewsAggregator.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +23,12 @@ builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddScoped<ChannelRepository>();
 builder.Services.AddScoped<ChannelService>();
+
+builder.Services.AddScoped<SubscribtionsService>();
+builder.Services.AddScoped<SubscribtionsController>();
+
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<UsersController>();
 
 builder.Services.AddSingleton<Services.Contracts.ILogger, ConsoleLogger>();
 builder.Services.AddSingleton<MessageBroker>();

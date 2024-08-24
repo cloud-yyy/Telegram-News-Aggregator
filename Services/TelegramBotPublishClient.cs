@@ -14,11 +14,11 @@ namespace Services
     {
         private readonly TelegramBotClient _botClient;
         private readonly CancellationTokenSource _connectionCancellationTokenSource;
-        private readonly List<long> _followerChatIds;
         private readonly ILogger _logger;
+        private readonly UserService _userService;
         private readonly SemaphoreSlim _semaphore;
 
-        public TelegramBotPublishClient(ILogger logger)
+        public TelegramBotPublishClient(ILogger logger, UserService userService)
         {
             var token = Environment.GetEnvironmentVariable("bot_token");
 
@@ -42,8 +42,8 @@ namespace Services
             );
 
             _logger = logger;
+            _userService = userService;
             _semaphore = new SemaphoreSlim(1, 1);
-            _followerChatIds = FileReaderWriterDebug.ReadFollowerChatIds();
         }
 
         public async Task Notify(SummaryDto message)
@@ -58,17 +58,10 @@ namespace Services
             _logger.LogInfo($"Sending message started in thread: {Environment.CurrentManagedThreadId}");
 
             var renderedMessage = RenderMessage(message);
+            var users = await _userService.GetAllUsers();
 
-            foreach (var chatId in _followerChatIds)
-            {
-                await _botClient.SendTextMessageAsync
-                (
-                    chatId: chatId,
-                    text: renderedMessage,
-                    parseMode: ParseMode.Html,
-                    cancellationToken: _connectionCancellationTokenSource.Token
-                );
-            }
+            foreach (var user in users)
+                await SendMessageAsync(user.TelegramId, renderedMessage);
 
             _logger.LogInfo($"Sending message completed in thread: {Environment.CurrentManagedThreadId}");
             _semaphore.Release();
@@ -80,10 +73,15 @@ namespace Services
             {
                 var chatId = update.Message.Chat.Id;
 
-                if (!_followerChatIds.Contains(chatId))
+                if (!await _userService.HasUserWithTelegramIdAsync(chatId))
                 {
-                    _followerChatIds.Add(chatId);
-                    await FileReaderWriterDebug.AddFollowerChatIdAsync(chatId);
+                    var user = new UserDto(chatId);
+                    await _userService.CreateUserAsync(user);
+                    await SendMessageAsync(chatId, "Succesefully logged in. You have started receiving news!");
+                }
+                else
+                {
+                    await SendMessageAsync(chatId, "You already subscribed on news!");
                 }
 
                 _logger.LogInfo($"Message received from chat with id {chatId}");
@@ -101,6 +99,17 @@ namespace Services
 
             _logger.LogError(ErrorMessage);
             return Task.CompletedTask;
+        }
+
+        private async Task SendMessageAsync(long chatId, string text)
+        {
+            await _botClient.SendTextMessageAsync
+            (
+                chatId: chatId,
+                text: text,
+                parseMode: ParseMode.Html,
+                cancellationToken: _connectionCancellationTokenSource.Token
+            );
         }
 
         private string RenderMessage(SummaryDto dto)
