@@ -13,7 +13,9 @@ builder.Services.AddDbContext<ApplicationContext>
 (
 	opts =>
 	{
-		opts.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+		opts
+			.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
+			.EnableSensitiveDataLogging();
 	},
 	// Use singletone because when working with threads Dispose called somewhere (System.ObjectDisposedException)
 	ServiceLifetime.Singleton
@@ -30,7 +32,6 @@ builder.Services.AddScoped<SubscribtionsController>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<UsersController>();
 
-builder.Services.AddSingleton<Services.Contracts.ILogger, ConsoleLogger>();
 builder.Services.AddSingleton<MessageBroker>();
 builder.Services.AddSingleton<WTelegramClient>();
 builder.Services.AddSingleton<ChatGptClient>();
@@ -43,9 +44,22 @@ builder.Services.AddScoped<ITelegramChannelIdResolver, WTelegramChannelIdResolve
 builder.Services.AddScoped<IPublishClient, TelegramBotPublishClient>();
 
 builder.Services.AddScoped<MessageBrokerConfig>();
+builder.Services.AddScoped<ApplicationEntryPoint>();
 
 var app = builder.Build();
 
+var logger = app.Services.GetRequiredService<ILogger<ApplicationEntryPoint>>();
+app.ConfigureExceptionHandler(logger);
+
+if (app.Environment.IsProduction())
+	app.UseHsts();
+
 app.MapControllers();
+
+using (var scope = app.Services.CreateScope())
+{
+	var entryPoint = scope.ServiceProvider.GetRequiredService<ApplicationEntryPoint>();
+	await entryPoint.Entry();
+}
 
 app.Run();

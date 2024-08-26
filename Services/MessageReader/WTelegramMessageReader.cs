@@ -1,4 +1,5 @@
 ﻿using Entities.Exceptions;
+using Microsoft.Extensions.Logging;
 using Repository;
 using Services.Contracts;
 using Shared.Dtos;
@@ -17,7 +18,7 @@ public class WTelegramMessageReader : ITelegramMessageReader
 
     public event Action<MessageDto>? OnReceived;
 
-    public WTelegramMessageReader(WTelegramClient client, MessageBroker broker, ChannelRepository repository, ILogger logger)
+    public WTelegramMessageReader(WTelegramClient client, MessageBroker broker, ChannelRepository repository, ILogger<WTelegramMessageReader> logger)
 	{
 		_client = client;
 		_broker = broker;
@@ -49,7 +50,7 @@ public class WTelegramMessageReader : ITelegramMessageReader
 
 		if (isListened && messageBase is Message message)
 		{
-			_logger.LogInfo($"New message handled in thread: {Environment.CurrentManagedThreadId}");
+			_logger.LogInformation($"New message handled in thread: {Environment.CurrentManagedThreadId}");
 			
 			var messageDto = new MessageDto
 			(

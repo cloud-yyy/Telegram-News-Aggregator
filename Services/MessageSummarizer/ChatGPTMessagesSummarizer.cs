@@ -1,5 +1,6 @@
 using System.Text;
 using Entities.Exceptions;
+using Microsoft.Extensions.Logging;
 using OpenAI.Chat;
 using Services.Contracts;
 using Shared.Dtos;
@@ -12,7 +13,7 @@ namespace Services
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
 
-        public ChatGPTMessagesSummarizer(ChatGptClient client, ILogger logger)
+        public ChatGPTMessagesSummarizer(ChatGptClient client, ILogger<ChatGPTMessagesSummarizer> logger)
         {
             _client = client;
             _logger = logger;
@@ -61,7 +62,7 @@ namespace Services
 
         private async Task<SummaryDto> SummarizeFromPrompt(string prompt, IEnumerable<MessageDto> sources)
         {
-            _logger.LogInfo($"ChatGPTMessagesSummarizer started in thread: {Environment.CurrentManagedThreadId}");
+            _logger.LogInformation($"ChatGPTMessagesSummarizer started in thread: {Environment.CurrentManagedThreadId}");
             
             ChatCompletion completion = await _client.Client.CompleteChatAsync(prompt);
 
@@ -84,7 +85,7 @@ namespace Services
                 createdAt: DateTime.UtcNow
             );
 
-            _logger.LogInfo($"ChatGPTMessagesSummarizer finished in thread: {Environment.CurrentManagedThreadId}");
+            _logger.LogInformation($"ChatGPTMessagesSummarizer finished in thread: {Environment.CurrentManagedThreadId}");
 
             return dto;
         }

@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using Services.Contracts;
 using Shared.Dtos;
 using TL;
@@ -15,7 +16,7 @@ namespace Services
 		public Client? Client => _client;
 		public bool LoggedIn => _client != null && _user != null;
 
-		public WTelegramClient(ILogger logger)
+		public WTelegramClient(ILogger<WTelegramClient> logger)
 		{
 			_logger = logger;
 			Helpers.Log = (l, s) => {};
@@ -39,7 +40,7 @@ namespace Services
 
 			if (_user != null)
 			{
-				_logger.LogInfo($"Logged in as: {_user.username} ({_user.ID})");
+				_logger.LogInformation($"Logged in as: {_user.username} ({_user.ID})");
 				return true;
 			}
 			else

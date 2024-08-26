@@ -18,6 +18,8 @@ namespace TelegramNewsAggregator.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllChannels()
         {
+            throw new Exception();
+
             var channels = await _service.GetAllChannelsAsync();
             return Ok(channels);
         }

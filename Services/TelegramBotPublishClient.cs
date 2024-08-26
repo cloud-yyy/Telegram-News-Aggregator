@@ -1,5 +1,6 @@
 using System.Text;
 using Entities.Exceptions;
+using Microsoft.Extensions.Logging;
 using Services.Contracts;
 using Shared.Dtos;
 using Telegram.Bot;
@@ -18,7 +19,7 @@ namespace Services
         private readonly UserService _userService;
         private readonly SemaphoreSlim _semaphore;
 
-        public TelegramBotPublishClient(ILogger logger, UserService userService)
+        public TelegramBotPublishClient(ILogger<TelegramBotPublishClient> logger, UserService userService)
         {
             var token = Environment.GetEnvironmentVariable("bot_token");
 
@@ -48,14 +49,13 @@ namespace Services
 
         public async Task Notify(SummaryDto message)
         {
-            _logger.LogInfo($"Publisher notified in thread: {Environment.CurrentManagedThreadId}");
             await Publish(message);
         }
 
         public async Task Publish(SummaryDto message)
         {
             await _semaphore.WaitAsync();
-            _logger.LogInfo($"Sending message started in thread: {Environment.CurrentManagedThreadId}");
+            _logger.LogInformation($"Sending message started in thread: {Environment.CurrentManagedThreadId}");
 
             var renderedMessage = RenderMessage(message);
             var users = await _userService.GetAllUsers();
@@ -63,7 +63,7 @@ namespace Services
             foreach (var user in users)
                 await SendMessageAsync(user.TelegramId, renderedMessage);
 
-            _logger.LogInfo($"Sending message completed in thread: {Environment.CurrentManagedThreadId}");
+            _logger.LogInformation($"Sending message completed in thread: {Environment.CurrentManagedThreadId}");
             _semaphore.Release();
         }
 
@@ -84,7 +84,7 @@ namespace Services
                     await SendMessageAsync(chatId, "You already subscribed on news!");
                 }
 
-                _logger.LogInfo($"Message received from chat with id {chatId}");
+                _logger.LogInformation($"Message received from chat with id {chatId}");
             }
         }
 

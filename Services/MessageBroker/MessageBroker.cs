@@ -1,4 +1,5 @@
 using Entities.Exceptions;
+using Microsoft.Extensions.Logging;
 using Services.Contracts;
 using Shared.Dtos;
 using Shared.Notifications;
@@ -11,7 +12,7 @@ namespace Services
         private readonly Topic<SummaryDto> _summarizedMessagesTopic;
         private readonly Topic<MessageSavedNotification> _messageSavedNotificationTopic;
 
-        public MessageBroker(ILogger logger)
+        public MessageBroker(ILogger<MessageBroker> logger)
         {
             _messagesTopic = new Topic<MessageDto>(logger);
             _summarizedMessagesTopic = new Topic<SummaryDto>(logger);

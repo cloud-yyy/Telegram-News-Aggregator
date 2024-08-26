@@ -1,18 +1,23 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
 WORKDIR /source
-
-COPY TelegramNewsAggregator/TelegramNewsAggregator.csproj TelegramNewsAggregator/
-
-RUN dotnet restore TelegramNewsAggregator/TelegramNewsAggregator.csproj
 
 COPY . .
 
-RUN dotnet publish -c Release -o /app TelegramNewsAggregator/TelegramNewsAggregator.csproj
+RUN dotnet nuget add source "https://pkgs.dev.azure.com/tgbots/Telegram.Bot/_packaging/release/nuget/v3/index.json" -n Telegram.Bot
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0
-EXPOSE 80/tcp
+RUN dotnet restore
+
+WORKDIR /source/TelegramNewsAggregator
+
+RUN dotnet publish -c release -o ../publish --no-restore
+
+###
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 as production
+
 WORKDIR /app
 
-COPY --from=build /app .
+COPY --from=build source/publish ./
 
-ENTRYPOINT ["dotnet",  "TelegramNewsAggregator.dll"]
+ENTRYPOINT ["dotnet", "TelegramNewsAggregator.dll"]

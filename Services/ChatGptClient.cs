@@ -1,5 +1,6 @@
 using Entities.Exceptions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using OpenAI.Chat;
 using Services.Contracts;
 using Shared.Params;
@@ -14,7 +15,7 @@ namespace Services
         public ChatClient Client => _client;
         public ChatGPTParams Params => _modelParameters;
 
-        public ChatGptClient(ILogger logger, IConfiguration configuration)
+        public ChatGptClient(ILogger<ChatGptClient> logger, IConfiguration configuration)
         {
             var paramsSection = configuration.GetSection("OpenAIParams");
             var token = Environment.GetEnvironmentVariable("openai_token");
@@ -40,7 +41,7 @@ namespace Services
             try
             {
                 _client = new(_modelParameters.ModelVersion, token);
-                logger.LogInfo("ChatGPT client: logged in.");
+                logger.LogInformation("ChatGPT client: logged in.");
             }
             catch (Exception ex)
             {

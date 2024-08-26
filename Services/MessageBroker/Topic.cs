@@ -1,4 +1,5 @@
 using System.Collections.Concurrent;
+using Microsoft.Extensions.Logging;
 using Services.Contracts;
 
 namespace Services
@@ -11,7 +12,7 @@ namespace Services
         private readonly List<IMessageConsumer<T>> _consumers;
         private readonly ILogger _logger;
 
-        public Topic(ILogger logger)
+        public Topic(ILogger<MessageBroker> logger)
         {
             _queue = new();
             _consumers = new();
@@ -25,6 +26,7 @@ namespace Services
         public void Push(T message)
         {
             _queue.Add(message);
+            _logger.LogTrace($"Message pushed to {typeof(T)} topic in thread {Environment.CurrentManagedThreadId}");
         }
 
         public void AddConsumer(IMessageConsumer<T> consumer)
@@ -45,7 +47,7 @@ namespace Services
             {
                 foreach(var consumer in _consumers)
                 {
-                    _logger.LogInfo($"Consumer notified: {consumer.GetType().Name} in thread {Environment.CurrentManagedThreadId}");
+                    _logger.LogTrace($"Consumer notified: {consumer.GetType().Name} in thread {Environment.CurrentManagedThreadId}");
                     consumer.Notify(message);
                 }
             }

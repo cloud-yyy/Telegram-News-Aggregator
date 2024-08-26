@@ -3,7 +3,7 @@ using Services.Contracts;
 using Shared.Dtos;
 using Shared.Notifications;
 
-namespace TelegramNewsAggregator;
+namespace Services;
 
 public class MessageBrokerConfig
 {

@@ -21,6 +21,9 @@ namespace Services
         private readonly TimeSpan _blockLifetime = TimeSpan.FromMinutes(1);
         private readonly int _delayInSeconds = 1;
 
+        private readonly Task _executionTask;
+        private readonly CancellationTokenSource _cancellationTokenSource;
+
         public MessageLifetimeTracker(
             ApplicationContextFactory contextFactory, 
             IMessagesSummarizer messagesSummarizer,
@@ -42,14 +45,18 @@ namespace Services
             _messageLifetime = TimeSpan.FromSeconds(configuration.GetValue<int>("MessageLifetimeInSeconds"));
             _blockLifetime = TimeSpan.FromSeconds(configuration.GetValue<int>("BlockLifetimeInSeconds"));
             _delayInSeconds = configuration.GetValue<int>("LifetimeCheckDelayInSeconds");
+
+            _cancellationTokenSource = new();
+            _executionTask = Task.Factory.StartNew
+                (ExecuteAsync, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
         }
 
-        public async Task ExecuteAsync()
+        private async Task ExecuteAsync()
         {
-            while(true)
+            while (true)
             {
                 var messages = GetNotSummarizedSingleMessages();
-                
+
                 if (messages.Any())
                     await SummarizeSingleMessages(messages);
 

@@ -2,7 +2,6 @@ using AutoMapper;
 using Entities;
 using Microsoft.EntityFrameworkCore;
 using Repository;
-using Services.Contracts;
 using Shared.Dtos;
 
 namespace Services
@@ -11,14 +10,12 @@ namespace Services
     {
         private readonly ApplicationContext _context;
         private readonly IMapper _mapper;
-        private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
 
-        public TagsDbWriter(ApplicationContextFactory contextFactory, IMapper mapper, ILogger logger)
+        public TagsDbWriter(ApplicationContextFactory contextFactory, IMapper mapper)
         {
             _context = contextFactory.Create();
             _mapper = mapper;
-            _logger = logger;
             _semaphore = new SemaphoreSlim(1, 1);
         }
 
