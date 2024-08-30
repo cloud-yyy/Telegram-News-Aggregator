@@ -22,33 +22,14 @@ namespace TelegramNewsAggregator.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Entities.MessageTag", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("MessageId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TagId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TagId");
-
-                    b.HasIndex("MessageId", "TagId")
-                        .IsUnique();
-
-                    b.ToTable("MessagesTags");
-                });
-
             modelBuilder.Entity("Entities.Models.BufferedBlock", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<int>("Size")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -138,6 +119,28 @@ namespace TelegramNewsAggregator.Migrations
                     b.ToTable("Messages");
                 });
 
+            modelBuilder.Entity("Entities.Models.MessageTag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("MessageId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TagId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TagId");
+
+                    b.HasIndex("MessageId", "TagId")
+                        .IsUnique();
+
+                    b.ToTable("MessagesTags");
+                });
+
             modelBuilder.Entity("Entities.Models.Summary", b =>
                 {
                     b.Property<Guid>("Id")
@@ -180,6 +183,24 @@ namespace TelegramNewsAggregator.Migrations
                     b.HasIndex("SummaryId");
 
                     b.ToTable("SummaryBlocks");
+                });
+
+            modelBuilder.Entity("Entities.Models.Tag", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Entities.Models.User", b =>
@@ -227,43 +248,6 @@ namespace TelegramNewsAggregator.Migrations
                     b.ToTable("UserChannels");
                 });
 
-            modelBuilder.Entity("Entities.Tag", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Name")
-                        .IsUnique();
-
-                    b.ToTable("Tags");
-                });
-
-            modelBuilder.Entity("Entities.MessageTag", b =>
-                {
-                    b.HasOne("Entities.Models.Message", "Message")
-                        .WithMany()
-                        .HasForeignKey("MessageId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Entities.Tag", "Tag")
-                        .WithMany()
-                        .HasForeignKey("TagId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Message");
-
-                    b.Navigation("Tag");
-                });
-
             modelBuilder.Entity("Entities.Models.BufferedMessage", b =>
                 {
                     b.HasOne("Entities.Models.BufferedBlock", "Block")
@@ -292,6 +276,25 @@ namespace TelegramNewsAggregator.Migrations
                         .IsRequired();
 
                     b.Navigation("Channel");
+                });
+
+            modelBuilder.Entity("Entities.Models.MessageTag", b =>
+                {
+                    b.HasOne("Entities.Models.Message", "Message")
+                        .WithMany()
+                        .HasForeignKey("MessageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Entities.Models.Tag", "Tag")
+                        .WithMany()
+                        .HasForeignKey("TagId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Message");
+
+                    b.Navigation("Tag");
                 });
 
             modelBuilder.Entity("Entities.Models.SummaryBlock", b =>

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using Entities.Models;
 
-namespace Entities;
+namespace Entities.Models;
 
 public class MessageTag
 {

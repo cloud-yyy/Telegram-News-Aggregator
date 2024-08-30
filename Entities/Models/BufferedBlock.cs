@@ -8,5 +8,7 @@ namespace Entities.Models
 
         [Required]
         public DateTime UpdatedAt { get; set; }
+
+        public int Size { get; set; }
     }
 }

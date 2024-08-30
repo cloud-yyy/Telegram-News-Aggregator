@@ -1,28 +1,65 @@
-using Services;
-using Services.Contracts;
+using Microsoft.EntityFrameworkCore;
+using Repository;
+using Services.Channels;
+using Services.Subscribtions;
+using Services.Users;
+using Shared.Clients;
+using Shared.Dtos;
+using TelegramNewsAggregator.Controllers;
 
-namespace TelegramNewsAggregator
+namespace TelegramNewsAggregator.Extensions
 {
     public static class ServicesExtensions
     {
-        public static void ConfigureSummarizing(this IServiceCollection services)
+        public static void ConfigureContextFactory(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddScoped<MessageBufferizerService>();
-            services.AddScoped<MessageComparerBase, ChatGPTMessagesComparer>();
-            services.AddScoped<IMessagesSummarizer, ChatGPTMessagesSummarizer>();
-            services.AddScoped<BufferedMessagesSummarizer>();
-            services.AddScoped<BufferedBlockService>();
-            services.AddScoped<MessageStatusDbWriter>();
-            services.AddScoped<MessageLifetimeTracker>();
+            services.AddDbContextFactory<ApplicationContext>(opts =>
+            {
+                opts
+                    .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                    .EnableSensitiveDataLogging();
+            });
         }
 
-        public static void ConfigureMessagesReading(this IServiceCollection services)
+        public static void ConfigureClients(this IServiceCollection services)
         {
-            services.AddScoped<ITelegramMessageReader, WTelegramMessageReader>();
-            services.AddScoped<ITagsExtractService, ChatGPTTagsExtractService>();
-            services.AddScoped<MessageWithTagsSaver>();
-            services.AddScoped<MessageDbWriter>();
-            services.AddScoped<TagsDbWriter>();
+            services.AddSingleton<WTelegramClient>((provider) =>
+            {
+                var user = new MessageReaderUserDto
+                (
+                    Environment.GetEnvironmentVariable("api_id")!,
+                    Environment.GetEnvironmentVariable("api_hash")!,
+                    Environment.GetEnvironmentVariable("phone_number")!,
+                    () =>
+                    {
+                        Console.WriteLine("Code: ");
+                        return Console.ReadLine()!;
+                    }
+                );
+
+                return new WTelegramClient(provider.GetRequiredService<ILogger<WTelegramClient>>(), user);
+            });
+
+            services.AddSingleton<ChatGptClient>();
+        }
+
+        public static void ConfigureChannels(this IServiceCollection services)
+        {
+            services.AddScoped<ChannelRepository>();
+            services.AddScoped<ChannelService>();
+            services.AddScoped<ITelegramChannelIdResolver, WTelegramChannelIdResolver>();
+        }
+
+        public static void ConfigureSubscribtions(this IServiceCollection services)
+        {
+            services.AddScoped<SubscribtionsService>();
+            services.AddScoped<SubscribtionsController>();
+        }
+
+        public static void ConfigureUsers(this IServiceCollection services)
+        {
+            services.AddScoped<UserService>();
+            services.AddScoped<UsersController>();
         }
     }
 }

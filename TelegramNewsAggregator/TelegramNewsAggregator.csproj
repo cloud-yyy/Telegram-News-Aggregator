@@ -11,10 +11,15 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="NLog" Version="5.3.3" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.12" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../Services/Services.csproj" />
+    <ProjectReference Include="../Reader/Reader.csproj" />
+    <ProjectReference Include="../Summarizer/Summarizer.csproj" />
+    <ProjectReference Include="../Publisher/Publisher.csproj" />
   </ItemGroup>
 
 </Project>

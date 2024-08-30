@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Services;
+using Services.Users;
 using Shared.Dtos;
 
 namespace TelegramNewsAggregator.Controllers

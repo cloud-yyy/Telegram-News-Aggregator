@@ -1,13 +1,12 @@
 using System.Net;
 using Entities.ErrorModels;
 using Microsoft.AspNetCore.Diagnostics;
-using Services;
 
 namespace TelegramNewsAggregator
 {
     public static class ExceptionMiddlewareExtensions
     {
-        public static void ConfigureExceptionHandler(this WebApplication app, ILogger<ApplicationEntryPoint> logger)
+        public static void ConfigureExceptionHandler(this WebApplication app)
         {
             app.UseExceptionHandler(appError =>
             {
@@ -18,7 +17,7 @@ namespace TelegramNewsAggregator
                 var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
                 if (contextFeature != null)
                 {
-                    logger.LogError($"Something went wrong: {contextFeature.Error}");
+                    // logger.LogError($"Something went wrong: {contextFeature.Error}");
                     await context.Response.WriteAsync(new ErrorDetails()
                     {
                         StatusCode = context.Response.StatusCode,
