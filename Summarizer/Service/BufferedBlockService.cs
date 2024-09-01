@@ -1,3 +1,4 @@
+using Entities.Exceptions;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using Repository;
@@ -16,8 +17,7 @@ namespace Summarizer.Service
         public async Task<Guid?> GetBlockIdForAnyMessageAsync(IEnumerable<Guid> messageIds)
         {
             var block = await _context.BufferedMessages
-                .Where(b => messageIds.Contains(b.MessageId))
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(b => messageIds.Contains(b.MessageId));
 
             return block?.BlockId;
         }
@@ -42,6 +42,13 @@ namespace Summarizer.Service
 
             if (!exists)
             {
+                var block = await _context.BufferedBlocks
+                    .Include(b => b.Messages)
+                    .SingleOrDefaultAsync(b => b.Id == blockId);
+
+                if (block == null)
+                    throw new BufferedBlockNotFoundException(blockId);
+
                 var message = new BufferedMessage()
                 {
                     Id = Guid.NewGuid(),
@@ -51,17 +58,8 @@ namespace Summarizer.Service
 
                 _context.BufferedMessages.Add(message);
 
-                var currentSize = await _context.BufferedBlocks
-                    .Where(b => b.Id == blockId)
-                    .Select(b => b.Size)
-                    .SingleAsync();
-
-                await _context.BufferedBlocks
-                    .Where(b => b.Id == blockId)
-                    .ExecuteUpdateAsync(s =>
-                        s.SetProperty(b => b.Size, currentSize + 1));
-
-                var block = await _context.BufferedBlocks.FindAsync(blockId);
+                block.Messages.Add(message);
+                block.Size++;
                 block.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();

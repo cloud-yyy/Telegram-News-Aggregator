@@ -17,7 +17,7 @@ namespace Services.Users
             _mapper = mapper;
         }
 
-        public async Task<IEnumerable<UserDto>> GetAllUsers()
+        public IEnumerable<UserDto> GetAllUsers()
         {
             return _context.Users
                 .Select(u => _mapper.Map<UserDto>(u))

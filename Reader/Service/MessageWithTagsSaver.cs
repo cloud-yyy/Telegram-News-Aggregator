@@ -1,7 +1,6 @@
 using System.Collections.Concurrent;
 using AutoMapper;
 using Entities.Models;
-using MessageBroker.Contracts;
 using MessageBroker.Service;
 using Microsoft.EntityFrameworkCore;
 using Reader.Contracts;
@@ -49,48 +48,31 @@ internal class MessageWithTagsSaver : IMessageSaver
         foreach (var message in _messagesQueue.GetConsumingEnumerable())
         {
             var tags = await _extractService.ExtractTagsAsync(message);
+            var messageModel = _mapper.Map<Message>(message);
 
-            await SaveMessageAsync(message);
-            await CreateNonExistentTags(tags);
-            await CreateMessageTags(message.Id, tags);
+            _context.Messages.Add(messageModel);
+
+            await CreateTags(messageModel, tags);
+
+            await _context.SaveChangesAsync();
 
             _broker.Push(new MessageCreatedNotification(message.Id));
         }
     }
 
-    private async Task SaveMessageAsync(MessageDto message)
-    {
-        var model = _mapper.Map<Message>(message);
-        var channelModel = _context.Channels.SingleOrDefault(c => c.Id == message.ChannelId);
-        model.Channel = channelModel;
-
-        _context.Messages.Add(model);
-        await _context.SaveChangesAsync();
-    }
-
-    private async Task CreateNonExistentTags(IEnumerable<string> tags)
+    private async Task CreateTags(Message message, IEnumerable<string> tags)
     {
         foreach (var tag in tags)
         {
-            if (!await _context.Tags!.AnyAsync(t => t.Name == tag))
+            var tagModel = await _context.Tags.SingleOrDefaultAsync(t => t.Name == tag);
+
+            if (tagModel == null)
             {
-                var entity = new Tag() { Name = tag };
-                _context.Tags!.Add(entity);
+                tagModel = new Tag() { Id = Guid.NewGuid(), Name = tag };
+                _context.Tags.Add(tagModel);
             }
+
+            message.Tags.Add(tagModel);
         }
-
-        await _context.SaveChangesAsync();
-    }
-
-    private async Task CreateMessageTags(Guid messageId, IEnumerable<string> tags)
-    {
-        foreach (var tag in tags)
-        {
-            var entity = await _context.Tags!.SingleOrDefaultAsync(t => t.Name == tag);
-            var messageTag = new MessageTag() { MessageId = messageId, TagId = entity!.Id };
-            _context.MessagesTags!.Add(messageTag);
-        }
-
-        await _context.SaveChangesAsync();
     }
 }

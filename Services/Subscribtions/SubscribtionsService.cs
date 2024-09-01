@@ -1,6 +1,5 @@
 using AutoMapper;
 using Entities.Exceptions;
-using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using Repository;
 using Shared.Dtos;
@@ -27,43 +26,44 @@ namespace Services.Subscribtions
             return await Task.FromResult(channels);
         }
 
-        public async Task SubscribeOnChannel(long userTelegramId, ChannelDto channel)
+        public async Task SubscribeOnChannel(long userTelegramId, long channelTelegramId)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.TelegramId == userTelegramId);
+            var user = await _context.Users
+                .Include(u => u.Subscribtions)
+                .AsSplitQuery()
+                .SingleOrDefaultAsync(u => u.TelegramId == userTelegramId);
 
             if (user == null)
                 throw new UserNotFoundException(userTelegramId);
 
-            var userChannel = new UserChannel()
-            {
-                Id = Guid.NewGuid(),
-                UserId = user.Id,
-                ChannelId = channel.Id
-            };
+            var channel = _context.Channels
+                .SingleOrDefault(c => c.TelegramId == channelTelegramId);
 
-            var existed = _context.UserChannels
-                .Where(uc => uc.UserId == user.Id && uc.ChannelId == channel.Id);
+            if (channel == null)
+                throw new ChannelNotFoundException(channelTelegramId);
 
-            if (!existed.Any())
-            {
-                _context.UserChannels.Add(userChannel);
-                await _context.SaveChangesAsync();
-            }
+            if (!user.Subscribtions.Any(c => c.Id == channel.Id))
+                user.Subscribtions.Add(channel);
+
+            await _context.SaveChangesAsync();
         }
 
-        public async Task UnsubscribeOfChannel(long userTelegramId, ChannelDto channel)
+        public async Task UnsubscribeOfChannel(long userTelegramId, long channelTelegramId)
         {
-            var user = await _context.Users.SingleOrDefaultAsync(u => u.TelegramId == userTelegramId);
+            var user = await _context.Users
+                .Include(u => u.Subscribtions)
+                .AsSplitQuery()
+                .SingleOrDefaultAsync(u => u.TelegramId == userTelegramId);
 
             if (user == null)
                 throw new UserNotFoundException(userTelegramId);
-                
-            var existed = _context.UserChannels
-                .SingleOrDefault(uc => uc.UserId == user.Id && uc.ChannelId == channel.Id);
 
-            if (existed != null)
+            var subscribedChannel = user.Subscribtions
+                .SingleOrDefault(s => s.TelegramId == channelTelegramId);
+
+            if (subscribedChannel != null)
             {
-                _context.UserChannels.Remove(existed);
+                user.Subscribtions.Remove(subscribedChannel);
                 await _context.SaveChangesAsync();
             }
         }

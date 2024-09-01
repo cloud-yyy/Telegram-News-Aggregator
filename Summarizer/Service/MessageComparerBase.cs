@@ -1,4 +1,3 @@
-using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using Repository;
 using Shared.Dtos;
@@ -16,50 +15,18 @@ namespace Summarizer.Service
 
         public async Task<IEnumerable<Guid>> GetSimilarMessagesIdsAsync(Guid newMessageId)
         {
-            var newMessage = await _context.Messages.FindAsync(newMessageId);
+            var messageTagsDtos = _context.Messages
+                .Include(m => m.Tags)
+                .Select(m => new MessageTagsDto(m.Id, m.Tags.Select(t => t.Name)))
+                .AsEnumerable();
 
-            var tags = ReadNotSummmarizedMessagesJoinedTags();
-            var newMessageTags = tags.SingleOrDefault(mt => mt.MessageId == newMessageId);
-            var existedMessagesTags = tags.Where(mt => mt.MessageId != newMessageId);
+            var newTags = messageTagsDtos.SingleOrDefault(t => t.MessageId == newMessageId);
+            var existedTags = messageTagsDtos.Where(t => t.MessageId != newMessageId);
 
-            if (!existedMessagesTags.Any())
+            if (!existedTags.Any())
                 return [];
 
-            return await CompareToMessageAsync(newMessageTags, existedMessagesTags);
-        }
-
-        private IEnumerable<MessageTagsDto> ReadNotSummmarizedMessagesJoinedTags()
-        {
-            var notSummarizedMessagesIds = _context.Messages
-                .Where(m => m.Status == Message.SummarizationStatus.NotSummarized
-                    || m.Status == Message.SummarizationStatus.InBlock)
-                .Select(m => m.Id);
-
-            return JoinMessageTagsToTags(notSummarizedMessagesIds);
-        }
-
-        private IEnumerable<MessageTagsDto> JoinMessageTagsToTags(IEnumerable<Guid> filterIds)
-        {
-            var messagesJoinedTags = _context.MessagesTags
-                .Where(mt => filterIds.Contains(mt.MessageId))
-                .Join(
-                    _context.Tags,
-                    mt => mt.TagId,
-                    t => t.Id,
-                    (mt, t) => new { MessageId = mt.MessageId, Tag = t.Name }
-                );
-
-            var messagesWithTagsMap = new Dictionary<Guid, List<string>>();
-
-            foreach (var item in messagesJoinedTags)
-            {
-                if (!messagesWithTagsMap.ContainsKey(item.MessageId))
-                    messagesWithTagsMap.Add(item.MessageId, []);
-
-                messagesWithTagsMap[item.MessageId].Add(item.Tag);
-            }
-
-            return messagesWithTagsMap.Select(keyPair => new MessageTagsDto(keyPair.Key, keyPair.Value));
+            return await CompareToMessageAsync(newTags!, existedTags);
         }
 
         protected abstract Task<IEnumerable<Guid>> CompareToMessageAsync

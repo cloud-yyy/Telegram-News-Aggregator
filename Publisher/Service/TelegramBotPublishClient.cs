@@ -96,6 +96,8 @@ namespace Publisher
                     };
 
                     _context.Users.Add(user);
+                    await _context.SaveChangesAsync();
+                    
                     await SendMessageAsync(chatId, "Succesefully logged in. You have started receiving news!");
                 }
                 else

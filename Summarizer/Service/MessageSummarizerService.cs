@@ -8,6 +8,7 @@ using Repository;
 using Shared.Dtos;
 using Shared.Params;
 using Summarizer.Contracts;
+using Summarizer.Extensions;
 
 namespace Summarizer.Service
 {
@@ -54,15 +55,13 @@ namespace Summarizer.Service
                 lifetimeCheckDelayInSeconds: int.Parse(config["LifetimeCheckDelayInSeconds"]!)
             );
         }
-        
-        public Task StartAsync()
+
+        public void Start()
         {
             _cancellationTokenSource = new();
 
             _executionTask = Task.Factory.StartNew
                 (Process, _cancellationTokenSource.Token, TaskCreationOptions.LongRunning, TaskScheduler.Default);
-
-            return Task.CompletedTask;
         }
 
         private async Task Process()
@@ -71,99 +70,89 @@ namespace Summarizer.Service
             {
                 _logger.LogTrace("Checking block and messages lifetime started");
 
-                var messages = GetMessagesForSummarization();
-
-                if (messages.Any())
-                {
-                    var ids = await SummarizeSingleMessages(messages);
-                    await UpdateMessagesStatusAsync(ids, Message.SummarizationStatus.SummarizedSingle);
-                }
-
-                var blockIds = GetBlocksForSummarization();
-
-                if (blockIds.Any())
-                {
-                    var ids = await SummarizeBlocks(blockIds);
-                    await UpdateMessagesStatusAsync(ids, Message.SummarizationStatus.SummarizedMultiple);
-                }
-
-                await _context.SaveChangesAsync();
+                await TrySummarizeMessages();
+                await TrySummarizeBlocks();
 
                 _logger.LogTrace("Checking block and messages lifetime ended");
-                
+
                 await Task.Delay(_bufferizationParams.LifetimeCheckDelayInSeconds * 1000);
             }
         }
 
-        private IEnumerable<MessageDto> GetMessagesForSummarization()
+        private async Task TrySummarizeMessages()
         {
             var messages = _context.Messages
-                .Where(m => m.Status == Message.SummarizationStatus.NotSummarized
-                    && DateTime.UtcNow - m.SendedAt >= _bufferizationParams.MessageLifetimeInSeconds)
+                .FilterMessagesToSummarize(_bufferizationParams.MessageLifetime)
                 .Select(m => _mapper.Map<MessageDto>(m))
                 .ToList();
 
-            return messages;
+            if (messages.Count != 0)
+            {
+                var ids = await SummarizeMessages(messages);
+                await _context.SaveChangesAsync();
+                await UpdateMessagesStatusAsync(ids, Message.SummarizationStatus.SummarizedSingle);
+            }
         }
 
-        private async Task<IEnumerable<Guid>> SummarizeSingleMessages(IEnumerable<MessageDto> messages)
+        private async Task TrySummarizeBlocks()
+        {
+            var ids = _context.BufferedBlocks
+                .FilterBlocksToSummarize(_bufferizationParams.BlockLifetime, _bufferizationParams.MaxBlockSize)
+                .Select(b => b.Id)
+                .ToList();
+
+            if (ids.Count != 0)
+            {
+                var summarizedBlocksIds = await SummarizeBlocks(ids);
+                await _context.SaveChangesAsync();
+                await UpdateMessagesStatusAsync(summarizedBlocksIds, Message.SummarizationStatus.SummarizedMultiple);
+            }
+        }
+
+        private async Task<IEnumerable<Guid>> SummarizeMessages(IEnumerable<MessageDto> messages)
         {
             foreach (var message in messages)
             {
                 var summary = await _messageSummarizer.SummarizeAsync([message]);
                 _broker.Push(summary);
-                await SaveSummaryAsync(summary);
+                CreateSummaryAsync(summary);
             }
 
             return messages.Select(m => m.Id);
         }
 
-        private IEnumerable<Guid> GetBlocksForSummarization()
-        {
-            var ids = _context.BufferedBlocks
-                .Where(b => DateTime.UtcNow - b.UpdatedAt >= _bufferizationParams.BlockLifetimeInSeconds
-                    || b.Size >= _bufferizationParams.MaxBlockSize)
-                .Select(b => b.Id)
-                .AsEnumerable();
-
-            return ids;
-        }
-
         private async Task<IEnumerable<Guid>> SummarizeBlocks(IEnumerable<Guid> blockIds)
         {
+            var ids = new List<MessageDto>();
+
             foreach (var id in blockIds)
             {
                 var summary = await _bufferedMessagesSummarizer.SummarizeBlockAsync(id);
                 _broker.Push(summary);
+
+                ids.AddRange(summary.Sources);
+
                 await _bufferedBlockService.DeleteBlock(id);
+                CreateSummaryAsync(summary);
             }
 
-            return _context.BufferedMessages
-                .Where(m => blockIds.Contains(m.BlockId))
+            return ids
                 .Select(m => m.Id)
                 .AsEnumerable();
         }
 
-        private async Task SaveSummaryAsync(SummaryDto dto)
+        private void CreateSummaryAsync(SummaryDto dto)
         {
             var summary = _mapper.Map<Summary>(dto);
-            _context.Summaries.Add(summary);
+            summary.Sources.Clear();
 
-            await _context.SaveChangesAsync();
-            
             foreach (var source in dto.Sources)
             {
-                var summaryBlock = new SummaryBlock()
-                {
-                    Id = Guid.NewGuid(),
-                    SummaryId = summary.Id,
-                    MessageId = source.Id
-                };
-
-                _context.SummaryBlocks.Add(summaryBlock);
+                var message = _context.Messages.Find(source.Id);
+                summary.Sources.Add(message!);
             }
 
-            await _context.SaveChangesAsync();
+            _context.Summaries.Add(summary);
         }
 
         private async Task UpdateMessagesStatusAsync(IEnumerable<Guid> ids, Message.SummarizationStatus status)

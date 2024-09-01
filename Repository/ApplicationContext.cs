@@ -1,6 +1,8 @@
+using System.Reflection;
 using Entities.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ThreadSafe;
+using Repository.EntityConfigurations;
 
 namespace Repository
 {
@@ -27,35 +29,38 @@ namespace Repository
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Channel>()
-                .HasIndex(e => e.Name)
-                .IsUnique();
-
-            modelBuilder.Entity<Tag>()
-                .HasIndex(e => e.Name)
-                .IsUnique();
-
-            modelBuilder.Entity<MessageTag>()
-                .HasIndex(e => new { e.MessageId, e.TagId })
-                .IsUnique();
-
-            modelBuilder.Entity<SummaryBlock>()
-                .HasIndex(e => e.MessageId )
-                .IsUnique();
-
-            modelBuilder.Entity<BufferedMessage>()
-                .HasIndex(e => e.MessageId)
-                .IsUnique();
-
-            modelBuilder.Entity<User>()
-                .HasIndex(e => e.TelegramId)
-                .IsUnique();
-
-            modelBuilder.Entity<UserChannel>()
-                .HasIndex(e => new { e.UserId, e.ChannelId })
-                .IsUnique();
-
+            ApplyEntitiesConfigurations(modelBuilder);
+            
             base.OnModelCreating(modelBuilder);
+        }
+
+        private void ApplyEntitiesConfigurations(ModelBuilder modelBuilder)
+        {
+            var assembly = Assembly.GetExecutingAssembly();
+
+            var entityTypeConfigurationTypes = assembly.GetTypes()
+                .Where(t => t.GetInterfaces()
+                    .Any(i => i.IsGenericType &&
+                        i.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>)))
+                .ToList();
+
+            foreach (var type in entityTypeConfigurationTypes)
+            {
+                var instance = Activator.CreateInstance(type);
+
+                var entityType = type.GetInterfaces()
+                    .First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>))
+                    .GetGenericArguments()
+                    .First();
+
+                var entityMethod = typeof(ModelBuilder).GetMethod(nameof(ModelBuilder.Entity), [])!
+                    .MakeGenericMethod(entityType);
+
+                var entityTypeBuilder = entityMethod.Invoke(modelBuilder, null);
+
+                var configureMethod = type.GetMethod(nameof(IEntityTypeConfiguration<object>.Configure));
+                configureMethod!.Invoke(instance, [entityTypeBuilder]);
+            }
         }
     }
 }

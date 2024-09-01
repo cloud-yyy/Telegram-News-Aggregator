@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-builder.ConfigureLogging();
+// builder.ConfigureLogging();
 
 builder.Services.ConfigureContextFactory(builder.Configuration);
 

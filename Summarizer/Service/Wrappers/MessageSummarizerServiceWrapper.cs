@@ -12,8 +12,9 @@ internal class MessageSummarizerServiceWrapper : BackgroundService
         _summarizerService = summarizerService;
     }
 
-    protected async override Task ExecuteAsync(CancellationToken stoppingToken)
+    protected override Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await _summarizerService.StartAsync();
+        _summarizerService.Start();
+        return Task.CompletedTask;
     }
 }

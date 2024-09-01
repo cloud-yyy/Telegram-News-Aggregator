@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Repository;
@@ -11,9 +12,11 @@ using Repository;
 namespace TelegramNewsAggregator.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class RepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20240831065322_UpdateUsingEFFeatures")]
+    partial class UpdateUsingEFFeatures
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,7 +39,7 @@ namespace TelegramNewsAggregator.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("BufferedBlocks", (string)null);
+                    b.ToTable("BufferedBlocks");
                 });
 
             modelBuilder.Entity("Entities.Models.BufferedMessage", b =>
@@ -58,7 +61,7 @@ namespace TelegramNewsAggregator.Migrations
                     b.HasIndex("MessageId")
                         .IsUnique();
 
-                    b.ToTable("BufferedMessages", (string)null);
+                    b.ToTable("BufferedMessages");
                 });
 
             modelBuilder.Entity("Entities.Models.Channel", b =>
@@ -83,7 +86,7 @@ namespace TelegramNewsAggregator.Migrations
                     b.HasIndex("TelegramId")
                         .IsUnique();
 
-                    b.ToTable("Channels", (string)null);
+                    b.ToTable("Channels");
                 });
 
             modelBuilder.Entity("Entities.Models.Message", b =>
@@ -116,7 +119,7 @@ namespace TelegramNewsAggregator.Migrations
 
                     b.HasIndex("ChannelId");
 
-                    b.ToTable("Messages", (string)null);
+                    b.ToTable("Messages");
                 });
 
             modelBuilder.Entity("Entities.Models.MessageTag", b =>
@@ -138,7 +141,7 @@ namespace TelegramNewsAggregator.Migrations
                     b.HasIndex("MessageId", "TagId")
                         .IsUnique();
 
-                    b.ToTable("MessagesTags", (string)null);
+                    b.ToTable("MessagesTags");
                 });
 
             modelBuilder.Entity("Entities.Models.Summary", b =>
@@ -160,7 +163,7 @@ namespace TelegramNewsAggregator.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Summaries", (string)null);
+                    b.ToTable("Summaries");
                 });
 
             modelBuilder.Entity("Entities.Models.SummaryBlock", b =>
@@ -182,7 +185,7 @@ namespace TelegramNewsAggregator.Migrations
 
                     b.HasIndex("SummaryId");
 
-                    b.ToTable("SummaryBlocks", (string)null);
+                    b.ToTable("SummaryBlocks");
                 });
 
             modelBuilder.Entity("Entities.Models.Tag", b =>
@@ -200,7 +203,7 @@ namespace TelegramNewsAggregator.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Tags", (string)null);
+                    b.ToTable("Tags");
                 });
 
             modelBuilder.Entity("Entities.Models.User", b =>
@@ -223,7 +226,7 @@ namespace TelegramNewsAggregator.Migrations
                     b.HasIndex("TelegramId")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("Entities.Models.UserChannel", b =>
@@ -245,7 +248,7 @@ namespace TelegramNewsAggregator.Migrations
                     b.HasIndex("UserId", "ChannelId")
                         .IsUnique();
 
-                    b.ToTable("UserChannels", (string)null);
+                    b.ToTable("UserChannels");
                 });
 
             modelBuilder.Entity("Entities.Models.BufferedMessage", b =>

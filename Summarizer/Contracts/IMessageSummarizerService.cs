@@ -2,6 +2,6 @@ namespace Summarizer.Contracts
 {
     public interface IMessageSummarizerService
     {
-        public Task StartAsync();
+        public void Start();
     }
 }

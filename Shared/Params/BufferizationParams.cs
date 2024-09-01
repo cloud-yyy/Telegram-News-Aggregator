@@ -3,8 +3,8 @@ namespace Shared.Params;
 public class BufferizationParams
 {
     public int MaxBlockSize { get; set; }
-    public TimeSpan MessageLifetimeInSeconds { get; set; }
-    public TimeSpan BlockLifetimeInSeconds { get; set; }
+    public TimeSpan MessageLifetime { get; set; }
+    public TimeSpan BlockLifetime { get; set; }
     public int LifetimeCheckDelayInSeconds { get; set; }
 
     public BufferizationParams(
@@ -14,8 +14,8 @@ public class BufferizationParams
         int lifetimeCheckDelayInSeconds)
     {
         MaxBlockSize = maxBufferedBlockSize;
-        MessageLifetimeInSeconds = messageLifetimeInSeconds;
-        BlockLifetimeInSeconds = blockLifetimeInSeconds;
+        MessageLifetime = messageLifetimeInSeconds;
+        BlockLifetime = blockLifetimeInSeconds;
         LifetimeCheckDelayInSeconds = lifetimeCheckDelayInSeconds;
     }
 }

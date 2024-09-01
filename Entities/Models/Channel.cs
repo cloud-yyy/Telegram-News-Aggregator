@@ -6,14 +6,13 @@ namespace Entities.Models
     {
         public Guid Id { get; set; }
         
-        [Required(ErrorMessage = "TelegramId is a required field.")]
         public long TelegramId { get; set; }
 
-        [Required(ErrorMessage = "Name is a required field.")]
-        [MinLength(5, ErrorMessage = "Minimum length of Name is 5.")]
-        [MaxLength(32, ErrorMessage = "Maximum length of Name is 32.")]
+        [MinLength(5), MaxLength(32)]
         public string Name { get; set; }
 
         public bool IsPrivate { get; set; }
+
+        public ICollection<User>? Subscribers { get; set; } = [];
     }
 }

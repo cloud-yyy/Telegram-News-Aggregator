@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Services.Subscribtions;
-using Shared.Dtos;
 
 namespace TelegramNewsAggregator.Controllers
 {
@@ -8,6 +7,19 @@ namespace TelegramNewsAggregator.Controllers
     [Route("api/subscribtions")]
     public class SubscribtionsController : ControllerBase
     {
+        public new class Request
+        {
+            public enum RequestAction
+            {
+                Subscribe,
+                Unsubscribe
+            }
+
+            public RequestAction Action { get; set; }
+            public long UserTelegramId { get; set; }
+            public long ChannelTelegramId { get; set; }
+        }
+
         private readonly SubscribtionsService _subscribtionsService;
 
         public SubscribtionsController(SubscribtionsService subscribtionsService)
@@ -24,18 +36,14 @@ namespace TelegramNewsAggregator.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Subscribe(long userTelegramId, ChannelDto channel)
+        public async Task<IActionResult> Modify(Request request)
         {
-            // do something with arguments -- combine them into one dto or read if from request string and channel from body
+            if (request.Action == Request.RequestAction.Subscribe)
+                await _subscribtionsService.SubscribeOnChannel(request.UserTelegramId, request.ChannelTelegramId);
 
-            await _subscribtionsService.SubscribeOnChannel(userTelegramId, channel);
-            return Ok();
-        }
+            if (request.Action == Request.RequestAction.Unsubscribe)
+                await _subscribtionsService.UnsubscribeOfChannel(request.UserTelegramId, request.ChannelTelegramId);
 
-        [HttpPost]
-        public async Task<IActionResult> Unsubscribe(long userTelegramId, ChannelDto channel)
-        {
-            await _subscribtionsService.UnsubscribeOfChannel(userTelegramId, channel);
             return Ok();
         }
     }

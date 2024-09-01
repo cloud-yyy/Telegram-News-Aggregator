@@ -41,29 +41,8 @@ namespace Summarizer.Service
             var summary = await _messagesSummarizer.SummarizeAsync(messageDtos);
 
             await _bufferedBlockService.DeleteBlock(blockId);
-            await SaveSummaryAsync(summary);
 
             return summary;
-        }
-
-        private async Task SaveSummaryAsync(SummaryDto dto)
-        {
-            var summary = _mapper.Map<Summary>(dto);
-            _context.Summaries.Add(summary);
-
-            foreach (var source in dto.Sources)
-            {
-                var summaryBlock = new SummaryBlock()
-                {
-                    Id = Guid.NewGuid(),
-                    SummaryId = summary.Id,
-                    MessageId = source.Id
-                };
-
-                _context.SummaryBlocks.Add(summaryBlock);
-            }
-
-            await _context.SaveChangesAsync();
         }
     }
 }
