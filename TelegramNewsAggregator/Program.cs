@@ -30,6 +30,9 @@ builder.Services.AddSingleton<BrokerConfig>();
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+	app.UseDeveloperExceptionPage();
+
 app.MapControllers();
 
 var config = app.Services.GetRequiredService<BrokerConfig>();
