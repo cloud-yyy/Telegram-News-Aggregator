@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TelegramNewsAggregator", "TelegramNewsAggregator\TelegramNewsAggregator.csproj", "{C7D89C4A-D56E-4E55-A170-D449D9F42DB4}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Aggregator", "Aggregator\Aggregator.csproj", "{C7D89C4A-D56E-4E55-A170-D449D9F42DB4}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Repository", "Repository\Repository.csproj", "{7AA23CBD-8F05-46F7-8ED0-5AF1D1ADAF62}"
 EndProject

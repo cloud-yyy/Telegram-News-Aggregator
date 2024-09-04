@@ -20,6 +20,17 @@ namespace Repository.EntityConfigurations
                 .HasMany(c => c.Subscribers)
                 .WithMany(c => c.Subscribtions)
                 .UsingEntity<UserChannel>();
+
+            builder.HasData
+            (
+                new Channel()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "Study and etc.",
+                    TelegramId = 2141230364,
+                    IsPrivate = true
+                }
+            );
         }
     }
 }

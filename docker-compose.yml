@@ -6,19 +6,19 @@ services:
     # volumes:
     #   - pgdata:/var/lib/postgresql/data
     environment:
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=root
     ports:
       - 5432:5432
     networks:
       - aggregator
   app:
-    image: aggregator:3
+    image: aggregator
     build:
       context: .
       dockerfile: ./Dockerfile
-      target: production
     ports:
-      - 5094:5094
+      - 8080:8080
     networks:
       - aggregator
     depends_on:

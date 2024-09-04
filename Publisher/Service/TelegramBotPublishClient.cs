@@ -81,6 +81,8 @@ namespace Publisher
 
         private async Task HandleUpdateAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
+            // TODO: When update received while Publish executing, it causes DbContext exception
+
             if (update.Message != null && update.Message.Text == "/start")
             {
                 var chatId = update.Message.Chat.Id;
@@ -97,7 +99,7 @@ namespace Publisher
 
                     _context.Users.Add(user);
                     await _context.SaveChangesAsync();
-                    
+
                     await SendMessageAsync(chatId, "Succesefully logged in. You have started receiving news!");
                 }
                 else

@@ -30,7 +30,6 @@ namespace Repository
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             ApplyEntitiesConfigurations(modelBuilder);
-            
             base.OnModelCreating(modelBuilder);
         }
 
