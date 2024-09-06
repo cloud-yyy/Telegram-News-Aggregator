@@ -7,10 +7,6 @@ namespace Aggregator.Extensions
     {
         public static void ConfigureLogging(this WebApplicationBuilder builder)
         {
-            var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
-            logger.Debug("NLog logger added");
-
-            builder.Logging.ClearProviders();
             builder.Host.UseNLog();
         }
     }

@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// builder.ConfigureLogging();
+builder.ConfigureLogging();
 
 builder.Services.ConfigureContextFactory(builder.Configuration);
 
@@ -30,13 +30,12 @@ builder.Services.AddSingleton<BrokerConfig>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-	app.UseDeveloperExceptionPage();
+app.ConfigureExceptionHandling();
 
 app.EnsureDatabaseCreated();
 
-app.MapControllers();
-
 app.ConfigureBroker();
+
+app.MapControllers();
 
 app.Run();
