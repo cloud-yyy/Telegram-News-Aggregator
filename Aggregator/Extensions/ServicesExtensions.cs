@@ -17,7 +17,7 @@ namespace Aggregator.Extensions
             services.AddDbContextFactory<ApplicationContext>(opts =>
             {
                 opts
-                    .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                    .UseNpgsql(configuration.GetConnectionString("DockerConnection"))
                     .EnableSensitiveDataLogging();
             });
         }

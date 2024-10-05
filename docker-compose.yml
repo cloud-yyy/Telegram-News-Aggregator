@@ -11,16 +11,16 @@ services:
     ports:
       - 5432:5432
     networks:
-      - aggregator
+      - news
   app:
-    image: aggregator
+    image: knpp/news
     build:
       context: .
       dockerfile: ./Dockerfile
     ports:
       - 8080:8080
     networks:
-      - aggregator
+      - news
     depends_on:
       - db
     stdin_open: true
@@ -28,4 +28,4 @@ services:
 # volumes:
 #   pgdata:
 networks:
-  aggregator:
+  news:

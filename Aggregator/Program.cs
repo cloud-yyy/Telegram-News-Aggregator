@@ -27,9 +27,18 @@ builder.Services.ConfigureReader();
 builder.Services.ConfigureSummarizer();
 builder.Services.ConfigurePublisher();
 
+builder.Services.AddSwaggerGen();
+
 builder.Services.AddSingleton<BrokerConfig>();
 
 var app = builder.Build();
+
+app.UseSwagger();
+
+app.UseSwaggerUI(c =>
+{
+	c.SwaggerEndpoint("/swagger/v1/swagger.json", "news");
+});
 
 app.ConfigureExceptionHandling();
 
