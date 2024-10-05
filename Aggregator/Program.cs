@@ -19,6 +19,7 @@ builder.Services.AddSingleton<Broker>();
 
 builder.Services.ConfigureClients();
 builder.Services.ConfigureChannels();
+builder.Services.ConfigureTopics();
 builder.Services.ConfigureSubscribtions();
 builder.Services.ConfigureUsers();
 
