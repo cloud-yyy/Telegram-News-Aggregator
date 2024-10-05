@@ -9,7 +9,7 @@ namespace Summarizer.Service
 {
     internal class BufferedMessagesSummarizer
     {
-        private readonly ApplicationContext _context;
+        private readonly IDbContextFactory<ApplicationContext> _contextFactory;
         private readonly IMapper _mapper;
         private readonly IMessagesSummarizer _messagesSummarizer;
         private readonly BufferedBlockService _bufferedBlockService;
@@ -20,7 +20,7 @@ namespace Summarizer.Service
             IMessagesSummarizer messagesSummarizer,
             BufferedBlockService bufferedBlockService)
         {
-            _context = contextFactory.CreateDbContext();
+            _contextFactory = contextFactory;
             _mapper = mapper;
             _messagesSummarizer = messagesSummarizer;
             _bufferedBlockService = bufferedBlockService;
@@ -28,15 +28,17 @@ namespace Summarizer.Service
 
         public async Task<SummaryDto> SummarizeBlockAsync(Guid blockId)
         {
-            var messageIds = _context.BufferedMessages
+            using var context = _contextFactory.CreateDbContext();
+
+            var messageIds = context.BufferedMessages
                 .Where(block => block.BlockId == blockId)
                 .Select(b => b.MessageId)
                 .ToList();
 
-            var messageDtos = _context.Messages
+            var messageDtos = context.Messages
                 .Where(m => messageIds.Contains(m.Id))
                 .Select(m => _mapper.Map<MessageDto>(m))
-                .AsEnumerable();
+                .ToList();
 
             var summary = await _messagesSummarizer.SummarizeAsync(messageDtos);
 

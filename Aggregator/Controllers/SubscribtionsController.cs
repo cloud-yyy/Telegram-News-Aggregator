@@ -9,15 +9,8 @@ namespace Aggregator.Controllers
     {
         public new class Request
         {
-            public enum RequestAction
-            {
-                Subscribe,
-                Unsubscribe
-            }
-
-            public RequestAction Action { get; set; }
             public long UserTelegramId { get; set; }
-            public long ChannelTelegramId { get; set; }
+            public List<Guid> TopicIds { get; set; } = [];
         }
 
         private readonly SubscribtionsService _subscribtionsService;
@@ -27,24 +20,24 @@ namespace Aggregator.Controllers
             _subscribtionsService = subscribtionsService;
         }
 
-        [HttpGet]
-        [Route("channels")]
-        public async Task<IActionResult> GetAllChannels()
+        [HttpPost]
+        [Route("subscribe")]
+        public async Task<IActionResult> SubscribeOnTopic(Request request)
         {
-            var channels = await _subscribtionsService.GetChannels();
-            return Ok(channels);
+            foreach (var id in request.TopicIds)
+                await _subscribtionsService.SubscribeOnTopic(request.UserTelegramId, id);
+
+            return Ok();
         }
 
         [HttpPost]
-        public async Task<IActionResult> Modify(Request request)
+        [Route("unsubscribe")]
+        public async Task<IActionResult> UnsubscribeOnTopic(Request request)
         {
-            if (request.Action == Request.RequestAction.Subscribe)
-                await _subscribtionsService.SubscribeOnChannel(request.UserTelegramId, request.ChannelTelegramId);
+            foreach (var id in request.TopicIds)
+                await _subscribtionsService.UnsubscribeOnTopic(request.UserTelegramId, id);
 
-            if (request.Action == Request.RequestAction.Unsubscribe)
-                await _subscribtionsService.UnsubscribeOfChannel(request.UserTelegramId, request.ChannelTelegramId);
-
-            return Ok();
+            return NoContent();
         }
     }
 }

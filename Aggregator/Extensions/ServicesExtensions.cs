@@ -6,6 +6,7 @@ using Services.Users;
 using Shared.Clients;
 using Shared.Dtos;
 using Aggregator.Controllers;
+using Services.Topics;
 
 namespace Aggregator.Extensions
 {
@@ -16,7 +17,7 @@ namespace Aggregator.Extensions
             services.AddDbContextFactory<ApplicationContext>(opts =>
             {
                 opts
-                    .UseNpgsql(configuration.GetConnectionString("DefaultConnection"))
+                    .UseNpgsql(configuration.GetConnectionString("DockerConnection"))
                     .EnableSensitiveDataLogging();
             });
         }
@@ -48,6 +49,12 @@ namespace Aggregator.Extensions
             services.AddScoped<ChannelRepository>();
             services.AddScoped<ChannelService>();
             services.AddScoped<ITelegramChannelIdResolver, WTelegramChannelIdResolver>();
+        }
+
+        public static void ConfigureTopics(this IServiceCollection services)
+        {
+            services.AddScoped<TopicsService>();
+            services.AddScoped<TopicsController>();
         }
 
         public static void ConfigureSubscribtions(this IServiceCollection services)

@@ -9,10 +9,11 @@ namespace Entities.Models
         public long TelegramId { get; set; }
 
         [MinLength(5), MaxLength(32)]
-        public string Name { get; set; }
+        public string Name { get; set; } = string.Empty;
 
         public bool IsPrivate { get; set; }
 
         public ICollection<User>? Subscribers { get; set; } = [];
+        public ICollection<Topic>? Topics { get; set; } = [];
     }
 }

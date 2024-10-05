@@ -1,4 +1,5 @@
 using System.Text;
+using System.Threading.Channels;
 using Entities.Exceptions;
 using MessageBroker.Contracts;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ namespace Publisher
     {
         private readonly TelegramBotClient _botClient;
         private readonly CancellationTokenSource _connectionCancellationTokenSource;
-        private readonly ApplicationContext _context;
+        private readonly IDbContextFactory<ApplicationContext> _contextFactory;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
 
@@ -47,7 +48,7 @@ namespace Publisher
                 _connectionCancellationTokenSource.Token
             );
 
-            _context = contextFactory.CreateDbContext();
+            _contextFactory = contextFactory;
             _logger = logger;
             _semaphore = new SemaphoreSlim(1, 1);
         }
@@ -61,17 +62,24 @@ namespace Publisher
         {
             await _semaphore.WaitAsync();
 
+
             try
             {
+                using var context = _contextFactory.CreateDbContext();
+
                 _logger.LogInformation($"Sending message started in thread: {Environment.CurrentManagedThreadId}");
 
                 var renderedMessage = RenderMessage(message);
-                var users = await _context.Users.ToListAsync();
+                var userIds = await GetRecipientsIds(message.Sources.Select(m => m.ChannelId), context);
 
-                foreach (var user in users)
-                    await SendMessageAsync(user.TelegramId, renderedMessage);
+                foreach (var userId in userIds)
+                    await SendMessageAsync(userId, renderedMessage);
 
                 _logger.LogInformation($"Sending message completed in thread: {Environment.CurrentManagedThreadId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex.ToString());
             }
             finally
             {
@@ -79,15 +87,60 @@ namespace Publisher
             }
         }
 
+        private async Task<IEnumerable<long>> GetRecipientsIds(IEnumerable<Guid> sourcesIds, ApplicationContext context)
+        {
+            // по итогу нужно список всех юзеров, кому отправить это сообщение
+
+            // есть сообщение, у него есть источники. у источников есть subscribers, 
+            // во первых пользователей тянем оттуда.
+
+            // var channelSubscribers = await context.Users
+            //     .Include(t => t.Subscribtions)
+            //     .Where(u =>
+            //         u.Subscribtions.Select(s => s.Id).Intersect(
+            //             sourcesIds
+            //         )
+            //         .ToList()
+            //         .Any())
+            //     .Select(u => u.TelegramId)
+            //     .ToListAsync();
+
+            // во вторых эти источники есть в топиках, то есть нужно получить топики
+            // из источников и оттуда второй список подпищиков
+
+            var topics = await context.Topics
+                .Include(t => t.Subscribers)
+                .Where(t => t.Channels!
+                    .Select(s => s.Id)
+                    .Intersect(sourcesIds)
+                    .Any())
+                .ToListAsync();
+
+            var topicsSubscribers = topics
+                .SelectMany(t => t.Subscribers!)
+                .Select(u => u.TelegramId)
+                .Distinct()            // remove only this line while using channels subscribers
+                .ToList();
+
+            // потом объединяем эти два списка и делаем дистинкт
+            
+            // var result = channelSubscribers
+            //     .Union(topicsSubscribers)
+            //     .Distinct();
+
+            return topicsSubscribers;
+        }
+
+
         private async Task HandleUpdateAsync(ITelegramBotClient client, Update update, CancellationToken token)
         {
-            // TODO: When update received while Publish executing, it causes DbContext exception
+            using var context = _contextFactory.CreateDbContext();
 
             if (update.Message != null && update.Message.Text == "/start")
             {
                 var chatId = update.Message.Chat.Id;
 
-                if (!_context.Users.Any(u => u.TelegramId == chatId))
+                if (!context.Users.Any(u => u.TelegramId == chatId))
                 {
                     var user = new Entities.Models.User()
                     {
@@ -97,8 +150,8 @@ namespace Publisher
                         TelegramId = chatId
                     };
 
-                    _context.Users.Add(user);
-                    await _context.SaveChangesAsync();
+                    context.Users.Add(user);
+                    await context.SaveChangesAsync(token);
 
                     await SendMessageAsync(chatId, "Succesefully logged in. You have started receiving news!");
                 }
@@ -144,7 +197,9 @@ namespace Publisher
                 .AppendLine($"{dto.Content}\n")
                 .AppendLine($"Sources:");
 
-            foreach (var uri in dto.Sources.Select(s => s.Uri).Distinct())
+            var uris = dto.Sources.Select(s => s.Uri).Distinct().ToList();
+
+            foreach (var uri in uris)
                 builder.AppendLine($"<i>{uri}</i>");
             
             builder

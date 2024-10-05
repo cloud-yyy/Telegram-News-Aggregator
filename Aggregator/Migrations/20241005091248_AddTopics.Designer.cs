@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Repository;
@@ -11,9 +12,11 @@ using Repository;
 namespace Aggregator.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class RepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20241005091248_AddTopics")]
+    partial class AddTopics
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,7 +91,7 @@ namespace Aggregator.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("5c18c6fa-4d67-44b2-944a-8abddc4f8e5a"),
+                            Id = new Guid("d549a8a0-1625-4247-a17b-fb7e4cb5d702"),
                             IsPrivate = true,
                             Name = "Study and etc.",
                             TelegramId = 2141230364L
@@ -186,7 +189,8 @@ namespace Aggregator.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MessageId");
+                    b.HasIndex("MessageId")
+                        .IsUnique();
 
                     b.HasIndex("SummaryId");
 
@@ -266,8 +270,8 @@ namespace Aggregator.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("241f0f49-0ba8-4991-9534-0ff45c854895"),
-                            CreatedAt = new DateTime(2024, 10, 5, 17, 27, 5, 525, DateTimeKind.Utc).AddTicks(4034),
+                            Id = new Guid("0d1b16e9-8521-4c64-ba0e-9d2a07049b9c"),
+                            CreatedAt = new DateTime(2024, 10, 5, 9, 12, 48, 262, DateTimeKind.Utc).AddTicks(2801),
                             SubscribtionsUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             TelegramId = 1268190565L
                         });

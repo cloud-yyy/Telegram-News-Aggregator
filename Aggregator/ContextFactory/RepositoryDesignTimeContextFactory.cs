@@ -15,7 +15,7 @@ public class RepositoryDesignTimeContextFactory : IDesignTimeDbContextFactory<Ap
 
 		var builder = new DbContextOptionsBuilder<ApplicationContext>()
 			.UseNpgsql(configuration.GetConnectionString("DefaultConnection"),
-				b => b.MigrationsAssembly("TelegramNewsAggregator"));
+				b => b.MigrationsAssembly("Aggregator"));
 
 		return new ApplicationContext(builder.Options);
 	}
