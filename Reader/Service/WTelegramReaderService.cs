@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Reader.Contracts;
 using Repository;
@@ -16,17 +15,20 @@ internal class WTelegramReaderService : IReaderService
     private readonly ILogger _logger;
     private readonly IMessageSaver _messageSaver;
     private readonly ApplicationContext _context;
-    private UpdateManager? _updateManager;
+	private readonly WrappedLinkFactory _wrappedLinkFactory;
+	private UpdateManager? _updateManager;
 
     public WTelegramReaderService(
 		IDbContextFactory<ApplicationContext> contextFactory,
 		IMessageSaver messageSaver,
 		WTelegramClient client,
-		ILogger<WTelegramReaderService> logger)
+		ILogger<WTelegramReaderService> logger,
+		WrappedLinkFactory wrappedLinkFactory)
 	{
 		_client = client;
 		_logger = logger;
 		_messageSaver = messageSaver;
+		_wrappedLinkFactory = wrappedLinkFactory;
 		_context = contextFactory.CreateDbContext();
 	}
 
@@ -69,7 +71,7 @@ internal class WTelegramReaderService : IReaderService
 					channelId: listenedChannel!.Id,
 					sendedAt: message.date,
 					content: message.message,
-					uri: BuildUri(listenedChannel, messageBase.ID)
+					uri: await BuildUri(listenedChannel, messageBase.ID)
 				);
 
 				_messageSaver.Save(messageDto);
@@ -77,8 +79,10 @@ internal class WTelegramReaderService : IReaderService
 		}
 	}
 
-	private static string BuildUri(Entities.Models.Channel channel, long messageId)
+	private async Task<string> BuildUri(Entities.Models.Channel channel, long messageId)
 	{
-		return channel.IsPrivate ? channel.Name : $"t.me/{channel.Name}/{messageId}";
+		// TODO: fix no-link problem when channel is private
+		var innerLink = channel.IsPrivate ? channel.Name : $"t.me/{channel.Name}/{messageId}";
+		return await _wrappedLinkFactory.CreateWrappedLink(innerLink);
 	}
 }

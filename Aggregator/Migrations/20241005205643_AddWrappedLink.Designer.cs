@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Repository;
@@ -11,9 +12,11 @@ using Repository;
 namespace Aggregator.Migrations
 {
     [DbContext(typeof(ApplicationContext))]
-    partial class RepositoryContextModelSnapshot : ModelSnapshot
+    [Migration("20241005205643_AddWrappedLink")]
+    partial class AddWrappedLink
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,7 +91,7 @@ namespace Aggregator.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("5a038383-db10-4dd6-b6c3-a5023de587fe"),
+                            Id = new Guid("eaa24ae1-8c21-4d7a-92e1-63ceac33e83b"),
                             IsPrivate = true,
                             Name = "Study and etc.",
                             TelegramId = 2141230364L
@@ -148,27 +151,6 @@ namespace Aggregator.Migrations
                         .IsUnique();
 
                     b.ToTable("MessagesTags");
-                });
-
-            modelBuilder.Entity("Entities.Models.MetricsSignal", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Action")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("ClickedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<long>("UserTelegramId")
-                        .HasColumnType("bigint");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MetricsSignals");
                 });
 
             modelBuilder.Entity("Entities.Models.Summary", b =>
@@ -287,8 +269,8 @@ namespace Aggregator.Migrations
                     b.HasData(
                         new
                         {
-                            Id = new Guid("4767a685-ff98-4800-ab7b-e4ab661ffae6"),
-                            CreatedAt = new DateTime(2024, 10, 5, 21, 6, 46, 566, DateTimeKind.Utc).AddTicks(7898),
+                            Id = new Guid("14818968-3826-4cb0-8fd3-82c5fd96800a"),
+                            CreatedAt = new DateTime(2024, 10, 5, 20, 56, 42, 434, DateTimeKind.Utc).AddTicks(7707),
                             SubscribtionsUpdatedAt = new DateTime(1, 1, 1, 0, 0, 0, 0, DateTimeKind.Unspecified),
                             TelegramId = 1268190565L
                         });

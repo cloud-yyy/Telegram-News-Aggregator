@@ -4,6 +4,7 @@ using Reader.Extensions;
 using Summarizer.Extensions;
 using Aggregator;
 using Aggregator.Extensions;
+using Reader.Service;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,8 @@ builder.Services.ConfigureContextFactory(builder.Configuration);
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddSingleton<Broker>();
+
+builder.Services.AddSingleton<WrappedLinkFactory>();
 
 builder.Services.ConfigureClients();
 builder.Services.ConfigureChannels();
