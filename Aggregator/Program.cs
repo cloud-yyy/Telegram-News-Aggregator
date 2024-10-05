@@ -7,6 +7,8 @@ using Aggregator.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.ConfigureCors();
+
 builder.Services.AddControllers();
 
 builder.ConfigureLogging();
