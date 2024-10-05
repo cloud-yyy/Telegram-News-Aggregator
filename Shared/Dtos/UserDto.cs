@@ -1,4 +1,4 @@
 namespace Shared.Dtos
 {
-    public record UserDto(long TelegramId);
+    public record UserDto(Guid Id, long TelegramId, DateTime CreatedAt);
 }

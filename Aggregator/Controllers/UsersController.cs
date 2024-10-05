@@ -15,6 +15,13 @@ namespace Aggregator.Controllers
             _userService = userService;
         }
 
+        [HttpGet]
+        public IActionResult GetAllUsers()
+        {
+            var result = _userService.GetAllUsers();
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] UserDto userDto)
         {
