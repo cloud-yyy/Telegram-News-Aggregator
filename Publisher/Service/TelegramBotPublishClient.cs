@@ -3,6 +3,7 @@ using System.Threading.Channels;
 using Entities.Exceptions;
 using MessageBroker.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Publisher.Contracts;
 using Repository;
@@ -22,10 +23,12 @@ namespace Publisher
         private readonly IDbContextFactory<ApplicationContext> _contextFactory;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
+        private readonly string _botTag;
 
         public TelegramBotPublishClient(
             ILogger<TelegramBotPublishClient> logger, 
-            IDbContextFactory<ApplicationContext> contextFactory)
+            IDbContextFactory<ApplicationContext> contextFactory,
+            IConfiguration configuration)
         {
             var token = Environment.GetEnvironmentVariable("bot_token");
 
@@ -51,6 +54,7 @@ namespace Publisher
             _contextFactory = contextFactory;
             _logger = logger;
             _semaphore = new SemaphoreSlim(1, 1);
+            _botTag = configuration.GetValue<string>("BotTag")!;
         }
 
         public async Task Notify(SummaryDto message)
@@ -188,21 +192,21 @@ namespace Publisher
             );
         }
 
-        private static string RenderMessage(SummaryDto dto)
+        private string RenderMessage(SummaryDto dto)
         {
             var builder = new StringBuilder();
 
             builder
                 .AppendLine($"<b>{dto.Title}</b>\n")
-                .AppendLine($"{dto.Content}\n")
-                .AppendLine($"Sources:");
+                .AppendLine($"{dto.Content}\n");
 
             var uris = dto.Sources.Select(s => s.Uri).Distinct().ToList();
 
             foreach (var uri in uris)
-                builder.AppendLine($"<i>{uri}</i>");
+                builder.AppendLine($"<i><a href='{uri}'>Перейти к источнику</a></i>");
             
             builder
+                .AppendLine(_botTag)
                 .AppendLine($"\n<i>Message was generated using AI</i>");
 
             return builder.ToString();
