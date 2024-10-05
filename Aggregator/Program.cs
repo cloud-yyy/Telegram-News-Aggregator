@@ -35,6 +35,8 @@ builder.Services.AddSingleton<BrokerConfig>();
 
 var app = builder.Build();
 
+app.UseCors("CorsPolicy");
+
 app.UseSwagger();
 
 app.UseSwaggerUI(c =>
