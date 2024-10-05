@@ -14,5 +14,6 @@ namespace Entities.Models
         public bool IsPrivate { get; set; }
 
         public ICollection<User>? Subscribers { get; set; } = [];
+        public ICollection<Topic>? Topics { get; set; } = [];
     }
 }

@@ -10,6 +10,7 @@ namespace Repository
     {
         public DbSet<Channel> Channels { get; set; }
         public DbSet<Message> Messages { get; set; }
+        public DbSet<Topic> Topics { get; set; }
         
         public DbSet<Tag> Tags { get; set; }
         public DbSet<MessageTag> MessagesTags { get; set; }
@@ -22,6 +23,7 @@ namespace Repository
         
         public DbSet<User> Users { get; set; }
         public DbSet<UserChannel> UserChannels { get; set; }
+        public DbSet<UserTopic> UserTopics { get; set; }
 
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
