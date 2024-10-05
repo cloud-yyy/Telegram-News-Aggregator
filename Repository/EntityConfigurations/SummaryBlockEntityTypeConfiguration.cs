@@ -12,9 +12,9 @@ namespace Repository.EntityConfigurations
                 .Property(sb => sb.SummaryId)
                 .IsRequired();
 
-            builder
-                .HasIndex(e => e.MessageId)
-                .IsUnique();
+            // builder
+            //     .HasIndex(e => e.MessageId)
+            //     .IsUnique();
         }
     }
 }
