@@ -62,10 +62,11 @@ namespace Publisher
         {
             await _semaphore.WaitAsync();
 
-            using var context = _contextFactory.CreateDbContext();
 
             try
             {
+                using var context = _contextFactory.CreateDbContext();
+
                 _logger.LogInformation($"Sending message started in thread: {Environment.CurrentManagedThreadId}");
 
                 var renderedMessage = RenderMessage(message);
@@ -75,6 +76,10 @@ namespace Publisher
                     await SendMessageAsync(userId, renderedMessage);
 
                 _logger.LogInformation($"Sending message completed in thread: {Environment.CurrentManagedThreadId}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogCritical(ex.ToString());
             }
             finally
             {
@@ -89,15 +94,16 @@ namespace Publisher
             // есть сообщение, у него есть источники. у источников есть subscribers, 
             // во первых пользователей тянем оттуда.
 
-            var channelSubscribers = await context.Users
-                .Include(t => t.Subscribtions)
-                .Where(u =>
-                    u.Subscribtions.Select(s => s.Id).Intersect(
-                        sourcesIds
-                    )
-                    .Any())
-                .Select(u => u.TelegramId)
-                .ToListAsync();
+            // var channelSubscribers = await context.Users
+            //     .Include(t => t.Subscribtions)
+            //     .Where(u =>
+            //         u.Subscribtions.Select(s => s.Id).Intersect(
+            //             sourcesIds
+            //         )
+            //         .ToList()
+            //         .Any())
+            //     .Select(u => u.TelegramId)
+            //     .ToListAsync();
 
             // во вторых эти источники есть в топиках, то есть нужно получить топики
             // из источников и оттуда второй список подпищиков
@@ -112,15 +118,17 @@ namespace Publisher
 
             var topicsSubscribers = topics
                 .SelectMany(t => t.Subscribers!)
-                .Select(u => u.TelegramId);
+                .Select(u => u.TelegramId)
+                .Distinct()            // remove only this line while using channels subscribers
+                .ToList();
 
             // потом объединяем эти два списка и делаем дистинкт
             
-            var result = channelSubscribers
-                .Union(topicsSubscribers)
-                .Distinct();
+            // var result = channelSubscribers
+            //     .Union(topicsSubscribers)
+            //     .Distinct();
 
-            return result;
+            return topicsSubscribers;
         }
 
 
@@ -189,7 +197,9 @@ namespace Publisher
                 .AppendLine($"{dto.Content}\n")
                 .AppendLine($"Sources:");
 
-            foreach (var uri in dto.Sources.Select(s => s.Uri).Distinct())
+            var uris = dto.Sources.Select(s => s.Uri).Distinct().ToList();
+
+            foreach (var uri in uris)
                 builder.AppendLine($"<i>{uri}</i>");
             
             builder
