@@ -11,5 +11,6 @@ namespace Entities.Models
         public DateTime SubscribtionsUpdatedAt { get; set; }
 
         public ICollection<Channel> Subscribtions { get; set; } = [];
+        public ICollection<Topic> SubscribedTopics { get; set; } = [];
     }
 }

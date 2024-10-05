@@ -14,6 +14,11 @@ namespace Repository.EntityConfigurations
                 .HasMany(t => t.Channels)
                 .WithMany(c => c.Topics)
                 .UsingEntity<TopicChannel>();
+
+            builder
+                .HasMany(t => t.Subscribers)
+                .WithMany(u => u.SubscribedTopics)
+                .UsingEntity<UserTopic>();
         }
     }
 }

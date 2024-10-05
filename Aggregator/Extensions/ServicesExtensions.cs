@@ -54,6 +54,7 @@ namespace Aggregator.Extensions
         public static void ConfigureTopics(this IServiceCollection services)
         {
             services.AddScoped<TopicsService>();
+            services.AddScoped<TopicsController>();
         }
 
         public static void ConfigureSubscribtions(this IServiceCollection services)

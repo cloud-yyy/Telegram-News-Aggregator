@@ -15,9 +15,24 @@ namespace Services.Topics
             _contextFactory = contextFactory;
         }
 
-        public Task<List<TopicDto>> GetAllTopics()
+        public Task<List<TopicDto>> GetAllTopics(long? userId)
         {
             using var context = _contextFactory.CreateDbContext();
+
+            // TODO: fix this shit
+            if (userId != null)
+            {
+                var user = context.Users
+                    .Include(u => u.SubscribedTopics)
+                    .AsSplitQuery()
+                    .FirstOrDefault(u => u.TelegramId == userId);
+
+                var subscribed = user.SubscribedTopics
+                    .Select(t => new TopicDto() { Id = t.Id, Name = t.Name })
+                    .ToList();
+
+                return Task.FromResult(subscribed);
+            }
 
             var result = context.Topics
                 .Select(t => new TopicDto()
