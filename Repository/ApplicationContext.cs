@@ -25,6 +25,9 @@ namespace Repository
         public DbSet<UserChannel> UserChannels { get; set; }
         public DbSet<UserTopic> UserTopics { get; set; }
 
+        public DbSet<MetricsSignal> MetricsSignals { get; set; }
+        public DbSet<WrappedLink> WrappedLinks { get; set; }
+
         public ApplicationContext(DbContextOptions<ApplicationContext> options) : base(options)
         {
         }

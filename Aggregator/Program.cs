@@ -4,8 +4,11 @@ using Reader.Extensions;
 using Summarizer.Extensions;
 using Aggregator;
 using Aggregator.Extensions;
+using Publisher.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.ConfigureCors();
 
 builder.Services.AddControllers();
 
@@ -16,6 +19,8 @@ builder.Services.ConfigureContextFactory(builder.Configuration);
 builder.Services.AddAutoMapper(typeof(Program));
 
 builder.Services.AddSingleton<Broker>();
+
+builder.Services.AddSingleton<WrappedLinkFactory>();
 
 builder.Services.ConfigureClients();
 builder.Services.ConfigureChannels();
@@ -32,6 +37,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<BrokerConfig>();
 
 var app = builder.Build();
+
+app.UseCors("CorsPolicy");
 
 app.UseSwagger();
 

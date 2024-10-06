@@ -7,7 +7,7 @@ namespace Aggregator.Controllers
     [Route("api/subscribtions")]
     public class SubscribtionsController : ControllerBase
     {
-        public new class Request
+        public class RequestBody
         {
             public long UserTelegramId { get; set; }
             public List<Guid> TopicIds { get; set; } = [];
@@ -22,7 +22,7 @@ namespace Aggregator.Controllers
 
         [HttpPost]
         [Route("subscribe")]
-        public async Task<IActionResult> SubscribeOnTopic(Request request)
+        public async Task<IActionResult> SubscribeOnTopic(RequestBody request)
         {
             foreach (var id in request.TopicIds)
                 await _subscribtionsService.SubscribeOnTopic(request.UserTelegramId, id);
@@ -32,7 +32,7 @@ namespace Aggregator.Controllers
 
         [HttpPost]
         [Route("unsubscribe")]
-        public async Task<IActionResult> UnsubscribeOnTopic(Request request)
+        public async Task<IActionResult> UnsubscribeOnTopic(RequestBody request)
         {
             foreach (var id in request.TopicIds)
                 await _subscribtionsService.UnsubscribeOnTopic(request.UserTelegramId, id);

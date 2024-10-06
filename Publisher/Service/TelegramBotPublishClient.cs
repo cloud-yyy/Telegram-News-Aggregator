@@ -1,10 +1,13 @@
 using System.Text;
 using System.Threading.Channels;
 using Entities.Exceptions;
+using Entities.Models;
 using MessageBroker.Contracts;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Publisher.Contracts;
+using Publisher.Utils;
 using Repository;
 using Shared.Dtos;
 using Telegram.Bot;
@@ -19,13 +22,17 @@ namespace Publisher
     {
         private readonly TelegramBotClient _botClient;
         private readonly CancellationTokenSource _connectionCancellationTokenSource;
+        private readonly WrappedLinkFactory _wrappedLinkFactory;
         private readonly IDbContextFactory<ApplicationContext> _contextFactory;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
+        private readonly string _botTag;
 
         public TelegramBotPublishClient(
             ILogger<TelegramBotPublishClient> logger, 
-            IDbContextFactory<ApplicationContext> contextFactory)
+            IDbContextFactory<ApplicationContext> contextFactory,
+            IConfiguration configuration,
+            WrappedLinkFactory wrappedLinkFactory)
         {
             var token = Environment.GetEnvironmentVariable("bot_token");
 
@@ -48,9 +55,11 @@ namespace Publisher
                 _connectionCancellationTokenSource.Token
             );
 
+            _wrappedLinkFactory = wrappedLinkFactory;
             _contextFactory = contextFactory;
             _logger = logger;
             _semaphore = new SemaphoreSlim(1, 1);
+            _botTag = configuration.GetValue<string>("BotTag")!;
         }
 
         public async Task Notify(SummaryDto message)
@@ -61,7 +70,6 @@ namespace Publisher
         public async Task Publish(SummaryDto message)
         {
             await _semaphore.WaitAsync();
-
 
             try
             {
@@ -188,22 +196,26 @@ namespace Publisher
             );
         }
 
-        private static string RenderMessage(SummaryDto dto)
+        private string RenderMessage(SummaryDto dto)
         {
             var builder = new StringBuilder();
 
             builder
                 .AppendLine($"<b>{dto.Title}</b>\n")
-                .AppendLine($"{dto.Content}\n")
-                .AppendLine($"Sources:");
+                .AppendLine($"{dto.Content}\n");
 
             var uris = dto.Sources.Select(s => s.Uri).Distinct().ToList();
 
-            foreach (var uri in uris)
-                builder.AppendLine($"<i>{uri}</i>");
-            
+            var wrappedUris = uris
+                .Select(u => _wrappedLinkFactory.CreateWrappedLink(u))
+                .ToList();
+
+            foreach (var uri in wrappedUris)
+                builder.AppendLine($"<i><a href='{uri}'>Перейти к источнику</a></i>");
+
             builder
-                .AppendLine($"\n<i>Message was generated using AI</i>");
+                .AppendLine($"\n<i>Message was generated using AI</i>")
+                .AppendLine(_botTag);
 
             return builder.ToString();
         }
