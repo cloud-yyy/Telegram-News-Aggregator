@@ -22,6 +22,14 @@ namespace Aggregator.Controllers
             return Ok(result);
         }
 
+        [HttpGet]
+        [Route("{telegramId:long}")]
+        public async Task<IActionResult> GetUserById(long telegramId)
+        {
+            var result = await _userService.GetUserById(telegramId);
+            return Ok(result);
+        }
+
         [HttpPost]
         public async Task<IActionResult> CreateUser([FromBody] UserDto userDto)
         {

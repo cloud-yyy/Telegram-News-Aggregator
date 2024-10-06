@@ -8,25 +8,42 @@ namespace Services.Users
 {
     public class UserService
     {
-        private readonly ApplicationContext _context;
+        private readonly IDbContextFactory<ApplicationContext> _contextFactory;
         private readonly IMapper _mapper;
 
         public UserService(IDbContextFactory<ApplicationContext> contextFactory, IMapper mapper)
         {
-            _context = contextFactory.CreateDbContext();
+            _contextFactory = contextFactory;
             _mapper = mapper;
         }
 
-        public IEnumerable<UserDto> GetAllUsers()
+        public List<UserDto> GetAllUsers()
         {
-            return _context.Users
+            using var context = _contextFactory.CreateDbContext();
+
+            return context.Users
                 .Select(u => _mapper.Map<UserDto>(u))
-                .AsEnumerable();
+                .ToList();
+        }
+
+        public async Task<UserDto?> GetUserById(long telegramId)
+        {
+            using var context = _contextFactory.CreateDbContext();
+
+            var result = await context.Users
+                .FirstOrDefaultAsync(u => u.TelegramId == telegramId);
+
+            if (result == null)
+                return null;
+
+            return new UserDto(result.Id, result.TelegramId, result.CreatedAt);
         }
 
         public async Task CreateUserAsync(UserDto userDto)
         {
-            var existed = await _context.Users.SingleOrDefaultAsync(u => u.TelegramId == userDto.TelegramId);
+            using var context = _contextFactory.CreateDbContext();
+
+            var existed = await context.Users.SingleOrDefaultAsync(u => u.TelegramId == userDto.TelegramId);
 
             if (existed == null)
             {
@@ -38,14 +55,15 @@ namespace Services.Users
                     SubscribtionsUpdatedAt = DateTime.UtcNow
                 };
 
-                _context.Users.Add(user);
-                await _context.SaveChangesAsync();
+                context.Users.Add(user);
+                await context.SaveChangesAsync();
             }
         }
 
         public async Task<bool> HasUserWithTelegramIdAsync(long telegramId)
         {
-            return await _context.Users.AnyAsync(u => u.TelegramId == telegramId);
+            using var context = _contextFactory.CreateDbContext();
+            return await context.Users.AnyAsync(u => u.TelegramId == telegramId);
         }
     }
 }
