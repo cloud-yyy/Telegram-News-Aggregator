@@ -1,11 +1,13 @@
 using System.Text;
 using System.Threading.Channels;
 using Entities.Exceptions;
+using Entities.Models;
 using MessageBroker.Contracts;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Publisher.Contracts;
+using Publisher.Utils;
 using Repository;
 using Shared.Dtos;
 using Telegram.Bot;
@@ -20,6 +22,7 @@ namespace Publisher
     {
         private readonly TelegramBotClient _botClient;
         private readonly CancellationTokenSource _connectionCancellationTokenSource;
+        private readonly WrappedLinkFactory _wrappedLinkFactory;
         private readonly IDbContextFactory<ApplicationContext> _contextFactory;
         private readonly ILogger _logger;
         private readonly SemaphoreSlim _semaphore;
@@ -28,7 +31,8 @@ namespace Publisher
         public TelegramBotPublishClient(
             ILogger<TelegramBotPublishClient> logger, 
             IDbContextFactory<ApplicationContext> contextFactory,
-            IConfiguration configuration)
+            IConfiguration configuration,
+            WrappedLinkFactory wrappedLinkFactory)
         {
             var token = Environment.GetEnvironmentVariable("bot_token");
 
@@ -51,6 +55,7 @@ namespace Publisher
                 _connectionCancellationTokenSource.Token
             );
 
+            _wrappedLinkFactory = wrappedLinkFactory;
             _contextFactory = contextFactory;
             _logger = logger;
             _semaphore = new SemaphoreSlim(1, 1);
@@ -201,12 +206,16 @@ namespace Publisher
 
             var uris = dto.Sources.Select(s => s.Uri).Distinct().ToList();
 
-            foreach (var uri in uris)
+            var wrappedUris = uris
+                .Select(u => _wrappedLinkFactory.CreateWrappedLink(u))
+                .ToList();
+
+            foreach (var uri in wrappedUris)
                 builder.AppendLine($"<i><a href='{uri}'>Перейти к источнику</a></i>");
-            
+
             builder
-                .AppendLine(_botTag)
-                .AppendLine($"\n<i>Message was generated using AI</i>");
+                .AppendLine($"\n<i>Message was generated using AI</i>")
+                .AppendLine(_botTag);
 
             return builder.ToString();
         }

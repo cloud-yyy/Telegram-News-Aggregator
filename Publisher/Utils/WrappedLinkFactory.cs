@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Repository;
 
-namespace Reader.Service
+namespace Publisher.Utils
 {
     public class WrappedLinkFactory
     {

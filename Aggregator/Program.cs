@@ -4,7 +4,7 @@ using Reader.Extensions;
 using Summarizer.Extensions;
 using Aggregator;
 using Aggregator.Extensions;
-using Reader.Service;
+using Publisher.Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
