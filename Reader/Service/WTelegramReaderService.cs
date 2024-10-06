@@ -11,14 +11,14 @@ namespace Reader.Service;
 
 internal class WTelegramReaderService : IReaderService
 {
-    private readonly WTelegramClient _client;
-    private readonly ILogger _logger;
-    private readonly IMessageSaver _messageSaver;
-    private readonly ApplicationContext _context;
+	private readonly WTelegramClient _client;
+	private readonly ILogger _logger;
+	private readonly IMessageSaver _messageSaver;
+	private readonly ApplicationContext _context;
 	private readonly WrappedLinkFactory _wrappedLinkFactory;
 	private UpdateManager? _updateManager;
 
-    public WTelegramReaderService(
+	public WTelegramReaderService(
 		IDbContextFactory<ApplicationContext> contextFactory,
 		IMessageSaver messageSaver,
 		WTelegramClient client,
@@ -57,7 +57,7 @@ internal class WTelegramReaderService : IReaderService
 
 			var listenedChannel = await _context.Channels
 				.SingleOrDefaultAsync(c => c.TelegramId == channelTelegramId);
-			
+
 			var isListened = listenedChannel != null;
 
 			if (isListened && messageBase is Message message)

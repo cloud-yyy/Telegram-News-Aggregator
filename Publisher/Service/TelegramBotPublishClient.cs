@@ -66,7 +66,6 @@ namespace Publisher
         {
             await _semaphore.WaitAsync();
 
-
             try
             {
                 using var context = _contextFactory.CreateDbContext();
