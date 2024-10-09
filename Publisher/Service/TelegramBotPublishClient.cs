@@ -77,7 +77,7 @@ namespace Publisher
 
                 _logger.LogInformation($"Sending message started in thread: {Environment.CurrentManagedThreadId}");
 
-                var renderedMessage = RenderMessage(message);
+                var renderedMessage = await RenderMessageAsync(message);
                 var userIds = await GetRecipientsIds(message.Sources.Select(m => m.ChannelId), context);
 
                 foreach (var userId in userIds)
@@ -196,7 +196,7 @@ namespace Publisher
             );
         }
 
-        private string RenderMessage(SummaryDto dto)
+        private async Task<string> RenderMessageAsync(SummaryDto dto)
         {
             var builder = new StringBuilder();
 
@@ -206,12 +206,11 @@ namespace Publisher
 
             var uris = dto.Sources.Select(s => s.Uri).Distinct().ToList();
 
-            var wrappedUris = uris
-                .Select(u => _wrappedLinkFactory.CreateWrappedLink(u))
-                .ToList();
-
-            foreach (var uri in wrappedUris)
-                builder.AppendLine($"<i><a href='{uri}'>Перейти к источнику</a></i>");
+            foreach (var uri in uris)
+            {
+                var wrappedUri = await _wrappedLinkFactory.CreateWrappedLink(uri);
+                builder.AppendLine($"<i><a href='{wrappedUri}'>Перейти к источнику</a></i>");
+            }
 
             builder
                 .AppendLine($"\n<i>Message was generated using AI</i>")
