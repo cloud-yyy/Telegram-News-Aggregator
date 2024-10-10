@@ -23,7 +23,7 @@ namespace Aggregator.Controllers
         }
 
         [HttpGet]
-        [Route("link/{id:guid}")]
+        [Route("/links/{id:guid}")]
         public async Task<IActionResult> HandleLink(Guid id)
         {
             // TODO: remove it
@@ -45,11 +45,11 @@ namespace Aggregator.Controllers
             context.MetricsSignals.Add(signal);
             await context.SaveChangesAsync();
 
-            return RedirectPermanent(link.InnerLink);
+            return Redirect(link.InnerLink);
         }
 
         [HttpPost]
-        [Route("signal")]
+        [Route("api/signal")]
         public async Task<IActionResult> HandleMetrics([FromBody] Request request)
         {
             var signal = new MetricsSignal()
