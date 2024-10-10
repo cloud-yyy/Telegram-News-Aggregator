@@ -31,7 +31,7 @@ namespace Publisher.Utils
             context.WrappedLinks.Add(link);
             await context.SaveChangesAsync();
 
-            return $"{_domainName}/back_api/metrics/links/{link.Id}";
+            return $"{_domainName}/links/{link.Id}";
         }
     }
 }

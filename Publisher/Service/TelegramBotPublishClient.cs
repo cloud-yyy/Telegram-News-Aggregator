@@ -34,30 +34,38 @@ namespace Publisher
             IConfiguration configuration,
             WrappedLinkFactory wrappedLinkFactory)
         {
+            _logger = logger;
+            _connectionCancellationTokenSource = new();
+
             var token = Environment.GetEnvironmentVariable("bot_token");
 
             if (token == null)
                 throw new EnviromentVariableNotFoundException("bot_token");
             
             _botClient = new TelegramBotClient(token);
-            _connectionCancellationTokenSource = new();
 
-            ReceiverOptions receiverOptions = new()
+            if (_botClient != null)
             {
-                AllowedUpdates = [UpdateType.Message]
-            };
+                ReceiverOptions receiverOptions = new()
+                {
+                    AllowedUpdates = [UpdateType.Message]
+                };
 
-            _botClient.StartReceiving
-            (
-                HandleUpdateAsync,
-                HandlePollingErrorAsync,
-                receiverOptions,
-                _connectionCancellationTokenSource.Token
-            );
+                _botClient.StartReceiving
+                (
+                    HandleUpdateAsync,
+                    HandlePollingErrorAsync,
+                    receiverOptions,
+                    _connectionCancellationTokenSource.Token
+                );
+
+                _logger.LogInformation("Telegram.Bot client successfully logged in");
+            }
+            else
+                _logger.LogCritical("Telegram.Bot failed to login.");
 
             _wrappedLinkFactory = wrappedLinkFactory;
             _contextFactory = contextFactory;
-            _logger = logger;
             _semaphore = new SemaphoreSlim(1, 1);
             _botTag = configuration.GetValue<string>("BotTag")!;
         }

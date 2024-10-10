@@ -5,6 +5,7 @@ using Summarizer.Extensions;
 using Aggregator;
 using Aggregator.Extensions;
 using Publisher.Utils;
+using Aggregator.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,6 +18,8 @@ builder.ConfigureLogging();
 builder.Services.ConfigureContextFactory(builder.Configuration);
 
 builder.Services.AddAutoMapper(typeof(Program));
+
+builder.Services.AddScoped<LinksController>();
 
 builder.Services.AddSingleton<Broker>();
 

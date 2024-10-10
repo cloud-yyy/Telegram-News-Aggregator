@@ -7,7 +7,7 @@ namespace Aggregator.Controllers
 {
     [ApiController]
     [Route("metrics")]
-    public class LinksMetricsController : ControllerBase
+    public class MetricsController : ControllerBase
     {
         public new class Request
         {
@@ -17,35 +17,9 @@ namespace Aggregator.Controllers
 
         private readonly IDbContextFactory<ApplicationContext> _contextFactory;
 
-        public LinksMetricsController(IDbContextFactory<ApplicationContext> contextFactory)
+        public MetricsController(IDbContextFactory<ApplicationContext> contextFactory)
         {
             _contextFactory = contextFactory;
-        }
-
-        [HttpGet]
-        [Route("/links/{id:guid}")]
-        public async Task<IActionResult> HandleLink(Guid id)
-        {
-            // TODO: remove it
-            using var context = _contextFactory.CreateDbContext();
-
-            var link = await context.WrappedLinks.FindAsync(id);
-
-            if (link == null)
-                return NotFound();
-
-            var signal = new MetricsSignal()
-            {
-                Id = Guid.NewGuid(),
-                Action = MetricsSignal.Type.ClickedOriginLink.ToString(),
-                UserTelegramId = 0,
-                ClickedAt = DateTime.UtcNow
-            };
-
-            context.MetricsSignals.Add(signal);
-            await context.SaveChangesAsync();
-
-            return Redirect(link.InnerLink);
         }
 
         [HttpPost]
