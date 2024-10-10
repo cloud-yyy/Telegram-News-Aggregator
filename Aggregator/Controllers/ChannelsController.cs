@@ -33,7 +33,7 @@ namespace Aggregator.Controllers
         public async Task<IActionResult> CreateChannel([FromBody] ChannelForCreationDto channelForCreationDto)
         {
             var result = await _service.CreateChannelAsync(channelForCreationDto);
-            return CreatedAtRoute("GetChannel", new { result.Id }, result);
+            return CreatedAtRoute("GetChannel", new { result.TelegramId }, result);
         }
 
         [HttpDelete("{id:long}")]
