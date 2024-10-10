@@ -27,7 +27,7 @@ namespace Aggregator.Controllers
         public async Task<IActionResult> GetUserById(long telegramId)
         {
             var result = await _userService.GetUserById(telegramId);
-            return Ok(result);
+            return result == null ? NotFound() : Ok(result);
         }
 
         [HttpPost]
